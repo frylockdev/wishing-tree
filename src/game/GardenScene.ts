@@ -59,29 +59,27 @@ export class GardenScene extends Phaser.Scene {
 
   // ---------- UI строительство ----------
 
-  private pill(x: number, y: number, icon: string, origin: 0 | 1): { text: Phaser.GameObjects.Text } {
+  private pill(x: number, y: number, icon: string): { text: Phaser.GameObjects.Text } {
     const c = this.add.container(x, y).setDepth(50);
-    const bg = this.add.rectangle(0, 0, 104, 32, 0xffffff, 0.92).setOrigin(origin, 0);
-    bg.setStrokeStyle(2, 0x00000022);
-    const dir = origin === 0 ? 1 : -1;
-    const iconImg = this.add.image(origin === 0 ? 18 : -86, 16, icon).setScale(1.1);
+    const bg = this.add.rectangle(0, 0, 104, 32, 0xffffff, 0.92).setOrigin(0, 0);
+    bg.setStrokeStyle(2, 0x000000, 0.15);
+    const iconImg = this.add.image(18, 16, icon).setScale(1.1);
     const text = this.add
-      .text(origin === 0 ? 34 : -70, 16, '0', {
+      .text(34, 16, '0', {
         fontSize: '15px',
         fontStyle: 'bold',
         color: '#3a2c1a',
       })
       .setOrigin(0, 0.5);
-    void dir;
     c.add([bg, iconImg, text]);
     return { text };
   }
 
   private buildHud() {
-    this.dropsText = this.pill(10, 12, 'drop', 0).text;
-    this.coinsText = this.pill(10, 52, 'coin', 0).text;
+    this.dropsText = this.pill(10, 12, 'drop').text;
+    this.coinsText = this.pill(10, 52, 'coin').text;
     const { theme } = getApp();
-    this.harvestText = this.pill(350, 12, `${theme.assetPrefix}-fruit`, 1).text;
+    this.harvestText = this.pill(246, 12, `${theme.assetPrefix}-fruit`).text;
 
     this.fertBadge = this.add
       .text(350, 56, '⚡ Удобрение ×2', {
@@ -100,12 +98,12 @@ export class GardenScene extends Phaser.Scene {
     const y = 480;
     const panel = this.add.container(180, y).setDepth(50);
     const bg = this.add.rectangle(0, 0, 300, 54, 0xffffff, 0.92);
-    bg.setStrokeStyle(2, 0x00000022);
+    bg.setStrokeStyle(2, 0x000000, 0.15);
     this.stageText = this.add
       .text(0, -13, '', { fontSize: '14px', fontStyle: 'bold', color: '#3a2c1a' })
       .setOrigin(0.5);
     const barBg = this.add.rectangle(-10, 12, 240, 12, 0xe4dccb).setOrigin(0, 0.5);
-    barBg.setStrokeStyle(1, 0x00000022);
+    barBg.setStrokeStyle(1, 0x000000, 0.15);
     barBg.x = -140 + 10;
     this.progressFill = this.add.rectangle(barBg.x, 12, 0, 12, 0x58b53c).setOrigin(0, 0.5);
     this.progressPct = this.add
@@ -126,7 +124,7 @@ export class GardenScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.actionCost = this.add.container(96, 0);
-    const costBg = this.add.circle(0, 0, 18, 0xffffff).setStrokeStyle(2, 0x00000022);
+    const costBg = this.add.circle(0, 0, 18, 0xffffff).setStrokeStyle(2, 0x000000, 0.15);
     const costIcon = this.add.image(0, -6, 'drop').setScale(0.7);
     const costText = this.add
       .text(0, 7, String(ECONOMY.waterCost), { fontSize: '11px', fontStyle: 'bold', color: '#2277bb' })

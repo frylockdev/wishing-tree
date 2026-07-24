@@ -7,16 +7,12 @@ import type { BrandTheme } from '../config/themes';
  * рисует процедурный плейсхолдер, чтобы игра работала до подключения ИИ-арта.
  */
 export class BootScene extends Phaser.Scene {
-  private failed = new Set<string>();
-
   constructor() {
     super('Boot');
   }
 
   preload() {
     const p = getApp().theme.assetPrefix;
-    this.load.on('loaderror', (file: Phaser.Loader.File) => this.failed.add(file.key));
-
     this.load.image(`${p}-bg`, `assets/${p}/bg.png`);
     for (let s = 1; s <= 5; s++) this.load.image(`${p}-tree-${s}`, `assets/${p}/tree-${s}.png`);
     this.load.image(`${p}-fruit`, `assets/${p}/fruit.png`);
@@ -28,15 +24,16 @@ export class BootScene extends Phaser.Scene {
   create() {
     const theme = getApp().theme;
     const p = theme.assetPrefix;
+    const missing = (key: string) => !this.textures.exists(key);
 
-    if (this.failed.has(`${p}-bg`)) this.makeBg(`${p}-bg`, theme);
+    if (missing(`${p}-bg`)) this.makeBg(`${p}-bg`, theme);
     for (let s = 1; s <= 5; s++) {
-      if (this.failed.has(`${p}-tree-${s}`)) this.makeTree(`${p}-tree-${s}`, s, theme);
+      if (missing(`${p}-tree-${s}`)) this.makeTree(`${p}-tree-${s}`, s, theme);
     }
-    if (this.failed.has(`${p}-fruit`)) this.makeFruit(`${p}-fruit`, theme);
-    if (this.failed.has('chest')) this.makeChest();
-    if (this.failed.has('drop')) this.makeDrop();
-    if (this.failed.has('coin')) this.makeCoin();
+    if (missing(`${p}-fruit`)) this.makeFruit(`${p}-fruit`, theme);
+    if (missing('chest')) this.makeChest();
+    if (missing('drop')) this.makeDrop();
+    if (missing('coin')) this.makeCoin();
 
     this.scene.start('Garden');
   }

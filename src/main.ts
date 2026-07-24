@@ -49,3 +49,6 @@ game.events.once(Phaser.Core.Events.READY, () => {
 });
 
 app.store.on('day:changed', () => maybeShowDailyBonus());
+
+// Доступ из консоли для отладки и автотестов
+(window as unknown as { __app: typeof app }).__app = app;
