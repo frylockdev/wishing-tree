@@ -3,3 +3,8 @@ dist
 *.local
 .DS_Store
 scripts/process_art.py
+
+# Сырые генерации в 4k — сотни мегабайт, в игру едут только нарезанные
+# спрайты из public/assets
+art_src_v2/
+art_src_final/

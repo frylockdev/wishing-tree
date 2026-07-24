@@ -5,10 +5,11 @@
 """
 
 import sys
-from collections import deque
 from pathlib import Path
 
+import numpy as np
 from PIL import Image, ImageFilter
+from scipy import ndimage
 
 SRC = Path(sys.argv[1]) if len(sys.argv) > 1 else Path('art_src')
 OUT = Path('public/assets')
@@ -19,31 +20,42 @@ OUT = Path('public/assets')
 ASSET_SCALE = 3
 
 
-def remove_bg(im: Image.Image, is_bg) -> Image.Image:
+def remove_bg(im: Image.Image, is_bg, drop_enclosed: bool = False) -> Image.Image:
+    """Вырезает фон, связный с краями кадра.
+
+    Именно связность с краем, а не просто цвет, бережёт белые цветы в кроне
+    и светлые блики внутри спрайта. Вместо пиксельного обхода размечаем
+    связные компоненты фона и гасим те, что касаются рамки, — на листах 4k
+    это разница между минутами и долей секунды.
+
+    drop_enclosed убирает ещё и запертые карманы подложки — просветы между
+    ветками и стволом, до которых от края не дойти. Гасим только те, что
+    попадают точно в цвет подложки, иначе выест белые цветы в кроне.
+    """
     im = im.convert('RGBA')
-    w, h = im.size
-    px = im.load()
-    visited = bytearray(w * h)
-    q = deque()
+    rgba = np.array(im)
+    rgb = rgba[..., :3].astype(np.int16)
+    bg = is_bg(rgb)
 
-    for x in range(w):
-        for y in (0, h - 1):
-            if is_bg(px[x, y]):
-                q.append((x, y))
-                visited[y * w + x] = 1
-    for y in range(h):
-        for x in (0, w - 1):
-            if is_bg(px[x, y]) and not visited[y * w + x]:
-                q.append((x, y))
-                visited[y * w + x] = 1
+    labels, count = ndimage.label(bg)
+    if count:
+        index = np.arange(1, count + 1)
+        edge_labels = np.unique(
+            np.concatenate([labels[0], labels[-1], labels[:, 0], labels[:, -1]])
+        )
+        cut = np.zeros(count + 1, dtype=bool)
+        cut[edge_labels] = True
+        cut[0] = False  # 0 — это не фон, а сам объект
 
-    while q:
-        x, y = q.popleft()
-        px[x, y] = (0, 0, 0, 0)
-        for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
-            if 0 <= nx < w and 0 <= ny < h and not visited[ny * w + nx] and is_bg(px[nx, ny]):
-                visited[ny * w + nx] = 1
-                q.append((nx, ny))
+        if drop_enclosed and cut.any():
+            backdrop = np.median(rgb[cut[labels]], axis=0)
+            means = np.stack(
+                [ndimage.mean(rgb[..., c], labels, index) for c in range(3)], axis=1
+            )
+            cut[1:] |= (np.abs(means - backdrop) <= 15).all(axis=1)
+
+        rgba[cut[labels]] = 0
+        im = Image.fromarray(rgba)
 
     # Смягчение краёв: полупрозрачная кромка в 1 пиксель
     alpha = im.split()[3]
@@ -53,20 +65,18 @@ def remove_bg(im: Image.Image, is_bg) -> Image.Image:
     return im
 
 
-def is_checker(p) -> bool:
-    r, g, b = p[0], p[1], p[2]
-    return max(r, g, b) - min(r, g, b) <= 30 and (r + g + b) / 3 >= 140
+def is_checker(rgb: np.ndarray) -> np.ndarray:
+    return (rgb.max(axis=2) - rgb.min(axis=2) <= 30) & (rgb.mean(axis=2) >= 140)
 
 
-def is_white(p) -> bool:
-    return p[0] >= 228 and p[1] >= 228 and p[2] >= 228
+def is_white(rgb: np.ndarray) -> np.ndarray:
+    return (rgb >= 228).all(axis=2)
 
 
 def split_columns(im: Image.Image, min_gap: int = 12, min_width: int = 20):
     """Ищет вертикальные колонки с непрозрачными пикселями, разделённые пустыми промежутками."""
-    w, h = im.size
-    alpha = im.split()[3].load()
-    occupied = [any(alpha[x, y] > 20 for y in range(h)) for x in range(w)]
+    w = im.width
+    occupied = (np.array(im.getchannel('A')) > 20).any(axis=0)
 
     runs = []
     start = None
@@ -118,18 +128,17 @@ def resize_h(im: Image.Image, logical_h: int) -> Image.Image:
 
 def split_widest(im: Image.Image, cols):
     """Если два дерева соприкасаются, делит самый широкий столбец в самом «тонком» месте."""
-    h = im.height
-    alpha = im.split()[3].load()
+    filled = (np.array(im.getchannel('A')) > 20).sum(axis=0)
     widest = max(range(len(cols)), key=lambda i: cols[i][1] - cols[i][0])
     x0, x1 = cols[widest]
     lo = x0 + (x1 - x0) // 4
     hi = x1 - (x1 - x0) // 4
-    best_x = min(range(lo, hi), key=lambda x: sum(1 for y in range(h) if alpha[x, y] > 20))
+    best_x = lo + int(filled[lo:hi].argmin())
     return cols[:widest] + [(x0, best_x - 1), (best_x + 1, x1)] + cols[widest + 1 :]
 
 
 def process_tree_sheet(path: Path, out_dir: Path):
-    im = remove_bg(Image.open(path), is_checker)
+    im = remove_bg(Image.open(path), is_checker, drop_enclosed=True)
     cols = split_columns(im)
     while len(cols) < 5:
         cols = split_widest(im, cols)
