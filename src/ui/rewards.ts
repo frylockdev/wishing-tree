@@ -1,5 +1,6 @@
 import { getApp } from '../app';
 import { REWARDS } from '../config/economy';
+import { fruitIconHtml } from '../config/themes';
 import type { Coupon, RewardDef } from '../config/types';
 import { el, openModal, openPanel } from './overlay';
 import { toast } from './toasts';
@@ -23,7 +24,7 @@ function renderContent(): HTMLElement {
   const root = el(`
     <div>
       <div class="rewards-balance">
-        <span>${theme.fruitEmoji} ${state.harvest.toLocaleString('ru-RU')}</span>
+        <span>${fruitIconHtml(theme)} ${state.harvest.toLocaleString('ru-RU')}</span>
         <span class="task-meta">собрано ${theme.fruitName}</span>
       </div>
       <div class="tabs">
@@ -61,7 +62,7 @@ function rewardCard(r: RewardDef): HTMLElement {
       <div class="task-info">
         <div class="task-title">${r.title}</div>
         <div class="task-meta">${r.subtitle}</div>
-        <div class="reward-price">${theme.fruitEmoji} ${r.costHarvest.toLocaleString('ru-RU')}</div>
+        <div class="reward-price">${fruitIconHtml(theme)} ${r.costHarvest.toLocaleString('ru-RU')}</div>
       </div>
       <button class="btn ${affordable ? 'primary' : 'ghost'}" ${affordable ? '' : 'disabled'}>Забрать</button>
     </div>

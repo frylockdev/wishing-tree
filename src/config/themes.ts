@@ -52,6 +52,11 @@ export const THEMES: Record<BrandId, BrandTheme> = {
   },
 };
 
+/** Инлайновая иконка фрукта темы — вместо системного эмодзи в HTML-панелях. */
+export function fruitIconHtml(theme: BrandTheme): string {
+  return `<img class="inline-icon" src="assets/${theme.assetPrefix}/fruit.png" alt="${theme.fruitName}">`;
+}
+
 export function applyThemeCss(brand: BrandId): void {
   const t = THEMES[brand];
   const root = document.documentElement;

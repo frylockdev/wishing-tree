@@ -87,6 +87,13 @@ body {
   z-index: 10;
 }
 
+/* Иконка-спрайт в строке текста вместо системного эмодзи */
+.inline-icon {
+  height: 1.05em;
+  width: auto;
+  vertical-align: -0.14em;
+}
+
 /* ---------- Нижняя навигация ---------- */
 
 #nav {
@@ -527,9 +534,12 @@ body {
   box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 60%, #ffffff);
 }
 
-.sapling-emoji {
-  font-size: 44px;
-  margin-bottom: 6px;
+.sapling-art {
+  display: block;
+  height: 72px;
+  width: auto;
+  margin: 0 auto 6px;
+  filter: drop-shadow(0 3px 4px rgba(90, 65, 25, 0.22));
 }
 
 /* ---------- Стрик ---------- */
@@ -889,9 +899,12 @@ body {
   box-shadow: var(--shadow-soft);
 }
 
-.album-emoji {
-  font-size: 36px;
-  margin-bottom: 6px;
+.album-art {
+  display: block;
+  height: 58px;
+  width: auto;
+  margin: 0 auto 6px;
+  filter: drop-shadow(0 2px 3px rgba(90, 65, 25, 0.2));
 }
 
 /* ---------- Дев-панель ---------- */

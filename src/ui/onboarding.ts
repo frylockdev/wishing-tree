@@ -53,11 +53,11 @@ export function openSaplingChooser(isOnboarding = false, onDone?: () => void): v
       <div class="onboarding-title">${isOnboarding ? 'Выбери свой первый саженец' : 'Новый сезон — новый саженец!'}</div>
       <div class="sapling-row">
         <button class="sapling-card" data-fruit="apple">
-          <div class="sapling-emoji">🍎</div>
+          <img class="sapling-art" src="assets/py/tree-5.png" alt="">
           <div class="task-title">Яблоня</div>
         </button>
         <button class="sapling-card" data-fruit="pear">
-          <div class="sapling-emoji">🍐</div>
+          <img class="sapling-art" src="assets/pk/tree-5.png" alt="">
           <div class="task-title">Груша</div>
         </button>
       </div>

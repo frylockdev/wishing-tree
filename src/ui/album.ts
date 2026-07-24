@@ -16,7 +16,7 @@ export function openAlbumPanel(): void {
       grid.appendChild(
         el(`
           <div class="album-card">
-            <div class="album-emoji">${entry.fruit === 'apple' ? '🍎' : '🍐'}🌳</div>
+            <img class="album-art" src="assets/${entry.fruit === 'apple' ? 'py' : 'pk'}/tree-5.png" alt="">
             <div class="task-title">Сезон ${entry.season}</div>
             <div class="task-meta">Урожай: ${entry.harvestedAmount.toLocaleString('ru-RU')}</div>
             <div class="task-meta">День ${entry.day}</div>
