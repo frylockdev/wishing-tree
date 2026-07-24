@@ -1,6 +1,6 @@
 import { ECONOMY, WHEEL_SECTORS } from '../config/economy';
 import { THEMES } from '../config/themes';
-import type { BrandId, Coupon, FruitId, GameState, TreeStage } from '../config/types';
+import type { BrandId, Coupon, FruitId, GameState } from '../config/types';
 import type { Store } from '../state/store';
 import type { ApiClient } from './ApiClient';
 import {
