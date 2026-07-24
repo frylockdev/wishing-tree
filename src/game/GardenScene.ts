@@ -4,6 +4,7 @@ import { ECONOMY } from '../config/economy';
 import { chestAvailable, chestRemainingHours, stageProgressPct } from '../api/logic';
 import type { GameState, TreeStage } from '../config/types';
 import { burstFruits, floatText, stageFlash } from './effects';
+import { FONT, UI_COLORS, chunkyButton, darken, roundRectTexture, type ChunkyButton } from './uikit';
 
 const STAGE_NAMES: Record<TreeStage, string> = {
   1: 'Росток',
@@ -22,11 +23,10 @@ export class GardenScene extends Phaser.Scene {
   private coinsText!: Phaser.GameObjects.Text;
   private harvestText!: Phaser.GameObjects.Text;
   private stageText!: Phaser.GameObjects.Text;
-  private progressFill!: Phaser.GameObjects.Rectangle;
+  private progressFill!: Phaser.GameObjects.Graphics;
   private progressPct!: Phaser.GameObjects.Text;
-  private actionLabel!: Phaser.GameObjects.Text;
   private actionCost!: Phaser.GameObjects.Container;
-  private actionBg!: Phaser.GameObjects.Rectangle;
+  private actionBtn!: ChunkyButton;
   private chestTimer!: Phaser.GameObjects.Text;
   private chestIcon!: Phaser.GameObjects.Image;
   private wheelBadge!: Phaser.GameObjects.Container;
@@ -62,15 +62,20 @@ export class GardenScene extends Phaser.Scene {
   // ---------- UI строительство ----------
 
   private pill(x: number, y: number, icon: string): { text: Phaser.GameObjects.Text } {
+    const key = roundRectTexture(this, 'ui-pill', 104, 32, 16, UI_COLORS.cream, {
+      alpha: 0.95,
+      stroke: UI_COLORS.creamBorder,
+      strokeWidth: 2,
+    });
     const c = this.add.container(x, y).setDepth(50);
-    const bg = this.add.rectangle(0, 0, 104, 32, 0xffffff, 0.92).setOrigin(0, 0);
-    bg.setStrokeStyle(2, 0x000000, 0.15);
-    const iconImg = this.add.image(18, 16, icon).setScale(1.1);
+    const bg = this.add.image(0, 0, key).setOrigin(0, 0);
+    const iconImg = this.add.image(20, 17, icon).setScale(1.1);
     const text = this.add
-      .text(34, 16, '0', {
+      .text(36, 17, '0', {
         fontSize: '15px',
-        fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif',
-        color: '#3a2c1a',
+        fontStyle: '800',
+        fontFamily: FONT,
+        color: UI_COLORS.textBrown,
       })
       .setOrigin(0, 0.5);
     c.add([bg, iconImg, text]);
@@ -86,10 +91,11 @@ export class GardenScene extends Phaser.Scene {
     this.fertBadge = this.add
       .text(350, 56, '⚡ Удобрение ×2', {
         fontSize: '12px',
-        fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif',
+        fontStyle: '800',
+        fontFamily: FONT,
         color: '#2a7d16',
-        backgroundColor: '#e8ffdd',
-        padding: { x: 8, y: 4 },
+        backgroundColor: '#e8ffddee',
+        padding: { x: 10, y: 5 },
       })
       .setOrigin(1, 0)
       .setDepth(50)
@@ -98,83 +104,87 @@ export class GardenScene extends Phaser.Scene {
 
   private buildProgressPanel() {
     const y = 480;
+    const key = roundRectTexture(this, 'ui-panel', 304, 56, 18, UI_COLORS.cream, {
+      alpha: 0.96,
+      stroke: UI_COLORS.creamBorder,
+      strokeWidth: 2,
+    });
     const panel = this.add.container(180, y).setDepth(50);
-    const bg = this.add.rectangle(0, 0, 300, 54, 0xffffff, 0.92);
-    bg.setStrokeStyle(2, 0x000000, 0.15);
+    const bg = this.add.image(0, 0, key);
     this.stageText = this.add
-      .text(0, -13, '', { fontSize: '15px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#3a2c1a' })
+      .text(0, -13, '', { fontSize: '15px', fontStyle: '800', fontFamily: FONT, color: UI_COLORS.textBrown })
       .setOrigin(0.5);
-    const barBg = this.add.rectangle(-10, 12, 240, 12, 0xe4dccb).setOrigin(0, 0.5);
-    barBg.setStrokeStyle(1, 0x000000, 0.15);
-    barBg.x = -140 + 10;
-    this.progressFill = this.add.rectangle(barBg.x, 12, 0, 12, 0x58b53c).setOrigin(0, 0.5);
+    const barBg = this.add.graphics();
+    barBg.fillStyle(0xefe6d0, 1);
+    barBg.fillRoundedRect(-136, 6, 230, 12, 6);
+    this.progressFill = this.add.graphics();
     this.progressPct = this.add
-      .text(128, 12, '0%', { fontSize: '12px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#3a2c1a' })
+      .text(136, 12, '0%', { fontSize: '12px', fontStyle: '800', fontFamily: FONT, color: UI_COLORS.textBrownSoft })
       .setOrigin(1, 0.5);
     panel.add([bg, this.stageText, barBg, this.progressFill, this.progressPct]);
   }
 
+  private drawProgress(pct: number) {
+    this.progressFill.clear();
+    const w = (pct / 100) * 230;
+    if (w > 2) {
+      this.progressFill.fillStyle(0x58b53c, 1);
+      this.progressFill.fillRoundedRect(-136, 6, w, 12, 6);
+      // Блик сверху — «леденцовый» объём
+      this.progressFill.fillStyle(0xffffff, 0.35);
+      this.progressFill.fillRoundedRect(-134, 7, Math.max(2, w - 4), 4, 2);
+    }
+  }
+
   private buildActionButton() {
     const { theme } = getApp();
-    const c = this.add.container(180, 545).setDepth(50);
-    this.actionBg = this.add
-      .rectangle(0, 0, 170, 54, Phaser.Display.Color.HexStringToColor(theme.colors.primary).color)
-      .setStrokeStyle(3, 0xffffff);
-    this.actionBg.setInteractive({ useHandCursor: true });
-    this.actionLabel = this.add
-      .text(0, 0, 'Полить', { fontSize: '22px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#ffffff' })
-      .setOrigin(0.5);
+    this.actionBtn = chunkyButton(this, 180, 543, 176, 56, 'Полить', 22, () => this.onAction());
+    this.actionBtn.container.setDepth(50);
+    const primary = Phaser.Display.Color.HexStringToColor(theme.colors.primary).color;
+    this.actionBtn.setColor(primary, darken(primary));
 
     this.actionCost = this.add.container(96, 0);
-    const costBg = this.add.circle(0, 0, 18, 0xffffff).setStrokeStyle(2, 0x000000, 0.15);
+    const costBg = this.add.circle(0, 0, 18, 0xffffff).setStrokeStyle(2, UI_COLORS.creamBorder);
     const costIcon = this.add.image(0, -6, 'drop').setScale(0.7);
     const costText = this.add
-      .text(0, 7, String(ECONOMY.waterCost), { fontSize: '11px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#2277bb' })
+      .text(0, 7, String(ECONOMY.waterCost), { fontSize: '11px', fontStyle: '800', fontFamily: FONT, color: '#2277bb' })
       .setOrigin(0.5);
     this.actionCost.add([costBg, costIcon, costText]);
+    this.actionBtn.container.add(this.actionCost);
+  }
 
-    c.add([this.actionBg, this.actionLabel, this.actionCost]);
-
-    this.actionBg.on('pointerdown', () => this.onAction());
-    this.actionBg.on('pointerover', () => this.actionBg.setAlpha(0.9));
-    this.actionBg.on('pointerout', () => this.actionBg.setAlpha(1));
+  private cornerChip(text: string): Phaser.GameObjects.Text {
+    return this.add
+      .text(0, 26, text, {
+        fontSize: '11px',
+        fontStyle: '800',
+        fontFamily: FONT,
+        color: UI_COLORS.textBrown,
+        backgroundColor: '#fffdf6ee',
+        padding: { x: 8, y: 3 },
+      })
+      .setOrigin(0.5);
   }
 
   private buildChest() {
-    const c = this.add.container(42, 545).setDepth(50);
+    const c = this.add.container(42, 543).setDepth(50);
     this.chestIcon = this.add.image(0, -8, 'chest').setInteractive({ useHandCursor: true });
-    this.chestTimer = this.add
-      .text(0, 24, '', {
-        fontSize: '11px',
-        fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif',
-        color: '#ffffff',
-        backgroundColor: '#00000066',
-        padding: { x: 6, y: 2 },
-      })
-      .setOrigin(0.5);
+    this.chestTimer = this.cornerChip('');
     c.add([this.chestIcon, this.chestTimer]);
     this.chestIcon.on('pointerdown', () => this.onChest());
   }
 
   private buildWheelButton() {
-    const c = this.add.container(318, 545).setDepth(50);
-    const circle = this.add.circle(0, -8, 26, 0xffffff, 0.95).setStrokeStyle(3, 0xffc700);
+    const c = this.add.container(318, 543).setDepth(50);
+    const circle = this.add.circle(0, -8, 26, UI_COLORS.cream, 0.97).setStrokeStyle(3, 0xffc700);
     circle.setInteractive({ useHandCursor: true });
     const emoji = this.add.text(0, -8, '🎡', { fontSize: '26px' }).setOrigin(0.5);
-    const label = this.add
-      .text(0, 24, 'Колесо', {
-        fontSize: '11px',
-        fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif',
-        color: '#ffffff',
-        backgroundColor: '#00000066',
-        padding: { x: 6, y: 2 },
-      })
-      .setOrigin(0.5);
+    const label = this.cornerChip('Колесо');
 
     this.wheelBadge = this.add.container(18, -26);
-    const badgeBg = this.add.circle(0, 0, 9, 0xe30613);
+    const badgeBg = this.add.circle(0, 0, 9, 0xe30613).setStrokeStyle(2, 0xffffff);
     const badgeText = this.add
-      .text(0, 0, '1', { fontSize: '11px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#ffffff' })
+      .text(0, 0, '1', { fontSize: '11px', fontStyle: '800', fontFamily: FONT, color: '#ffffff' })
       .setOrigin(0.5);
     this.wheelBadge.add([badgeBg, badgeText]);
 
@@ -295,18 +305,20 @@ export class GardenScene extends Phaser.Scene {
     this.stageText.setText(
       state.tree.readyToHarvest ? 'Урожай созрел!' : `${STAGE_NAMES[state.tree.stage]} · сезон ${state.tree.season}`,
     );
-    this.progressFill.width = (pct / 100) * 240;
+    this.drawProgress(pct);
     this.progressPct.setText(`${pct}%`);
 
     if (state.tree.readyToHarvest) {
-      this.actionLabel.setText('Собрать');
-      this.actionBg.fillColor = Phaser.Display.Color.HexStringToColor(theme.colors.accent).color;
-      this.actionLabel.setColor('#3a2c1a');
+      this.actionBtn.label.setText('Собрать');
+      const accent = Phaser.Display.Color.HexStringToColor(theme.colors.accent).color;
+      this.actionBtn.setColor(accent, darken(accent));
+      this.actionBtn.label.setColor('#3a2c1a');
       this.actionCost.setVisible(false);
     } else {
-      this.actionLabel.setText('Полить');
-      this.actionBg.fillColor = Phaser.Display.Color.HexStringToColor(theme.colors.primary).color;
-      this.actionLabel.setColor('#ffffff');
+      this.actionBtn.label.setText('Полить');
+      const primary = Phaser.Display.Color.HexStringToColor(theme.colors.primary).color;
+      this.actionBtn.setColor(primary, darken(primary));
+      this.actionBtn.label.setColor('#ffffff');
       this.actionCost.setVisible(true);
     }
 

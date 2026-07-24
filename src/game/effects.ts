@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { FONT } from './uikit';
 
 /** Всплывающий текст (+10, +N капель и т.п.) */
 export function floatText(
@@ -11,8 +12,8 @@ export function floatText(
   const t = scene.add
     .text(x, y, text, {
       fontSize: '22px',
-      fontStyle: 'bold',
-      fontFamily: 'Trebuchet MS, Arial, sans-serif',
+      fontStyle: '900',
+      fontFamily: FONT,
       color,
       stroke: '#00000055',
       strokeThickness: 4,

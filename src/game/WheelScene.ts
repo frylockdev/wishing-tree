@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { getApp } from '../app';
 import { ECONOMY, WHEEL_SECTORS } from '../config/economy';
+import { FONT, UI_COLORS, chunkyButton, roundRectTexture, type ChunkyButton } from './uikit';
 
 const CX = 180;
 const CY = 290;
@@ -8,8 +9,7 @@ const R = 132;
 
 export class WheelScene extends Phaser.Scene {
   private wheel!: Phaser.GameObjects.Container;
-  private spinBtnBg!: Phaser.GameObjects.Rectangle;
-  private spinBtnText!: Phaser.GameObjects.Text;
+  private spinBtn!: ChunkyButton;
   private hintText!: Phaser.GameObjects.Text;
   private spinning = false;
 
@@ -24,7 +24,14 @@ export class WheelScene extends Phaser.Scene {
     });
 
     this.add
-      .text(CX, 80, '🎡 Колесо удачи', { fontSize: '24px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#ffffff' })
+      .text(CX, 80, '🎡 Колесо удачи', {
+        fontSize: '24px',
+        fontStyle: '900',
+        fontFamily: FONT,
+        color: '#ffffff',
+        stroke: '#00000044',
+        strokeThickness: 4,
+      })
       .setOrigin(0.5);
 
     this.buildWheel();
@@ -33,21 +40,16 @@ export class WheelScene extends Phaser.Scene {
     this.add.triangle(CX, CY - R - 6, 0, 0, 24, 0, 12, 26, 0xffc700).setOrigin(0.5, 0).setDepth(5);
 
     // Кнопка вращения
-    const btn = this.add.container(CX, 500);
-    this.spinBtnBg = this.add.rectangle(0, 0, 220, 52, 0xffc700).setStrokeStyle(3, 0xffffff);
-    this.spinBtnBg.setInteractive({ useHandCursor: true });
-    this.spinBtnText = this.add
-      .text(0, 0, '', { fontSize: '18px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#3a2c1a' })
-      .setOrigin(0.5);
-    btn.add([this.spinBtnBg, this.spinBtnText]);
-    this.spinBtnBg.on('pointerdown', () => this.onSpin());
+    this.spinBtn = chunkyButton(this, CX, 500, 224, 54, '', 18, () => this.onSpin());
+    this.spinBtn.setColor(0xffc700, 0xc79a00);
+    this.spinBtn.label.setColor('#3a2c1a');
 
     this.hintText = this.add
-      .text(CX, 540, '', { fontSize: '13px', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#ffffffcc' })
+      .text(CX, 540, '', { fontSize: '13px', fontStyle: '700', fontFamily: FONT, color: '#ffffffcc' })
       .setOrigin(0.5);
 
     const closeBtn = this.add
-      .text(336, 24, '✕', { fontSize: '24px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#ffffff' })
+      .text(336, 24, '✕', { fontSize: '24px', fontStyle: 'bold', fontFamily: FONT, color: '#ffffff' })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
     closeBtn.on('pointerdown', () => {
@@ -81,7 +83,8 @@ export class WheelScene extends Phaser.Scene {
       const label = this.add
         .text(Math.cos(mid) * (R - 42), Math.sin(mid) * (R - 42), sector.short, {
           fontSize: '15px',
-          fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif',
+          fontStyle: '800',
+          fontFamily: FONT,
           color: '#ffffff',
           stroke: '#00000055',
           strokeThickness: 3,
@@ -103,13 +106,13 @@ export class WheelScene extends Phaser.Scene {
   private refreshButton() {
     const s = getApp().store.state;
     if (this.freeAvailable()) {
-      this.spinBtnText.setText('Крутить бесплатно!');
+      this.spinBtn.label.setText('Крутить бесплатно!');
       this.hintText.setText('1 бесплатное вращение в день');
-      this.spinBtnBg.setAlpha(1);
+      this.spinBtn.container.setAlpha(1);
     } else {
-      this.spinBtnText.setText(`Крутить за ${ECONOMY.wheelExtraSpinCoins} 🪙`);
+      this.spinBtn.label.setText(`Крутить за ${ECONOMY.wheelExtraSpinCoins} 🪙`);
       this.hintText.setText(`У тебя ${s.coins} монет`);
-      this.spinBtnBg.setAlpha(s.coins >= ECONOMY.wheelExtraSpinCoins ? 1 : 0.5);
+      this.spinBtn.container.setAlpha(s.coins >= ECONOMY.wheelExtraSpinCoins ? 1 : 0.5);
     }
   }
 
@@ -147,27 +150,31 @@ export class WheelScene extends Phaser.Scene {
   private showPrize(sectorIndex: number) {
     const sector = WHEEL_SECTORS[sectorIndex];
     const c = this.add.container(CX, CY).setDepth(20).setScale(0);
-    const bg = this.add.rectangle(0, 0, 260, 150, 0xffffff).setStrokeStyle(4, 0xffc700);
+    const panelKey = roundRectTexture(this, 'wheel-prize-panel', 264, 156, 22, UI_COLORS.cream, {
+      stroke: 0xffc700,
+      strokeWidth: 4,
+    });
+    const bg = this.add.image(0, 0, panelKey);
     const title = this.add
-      .text(0, -40, sectorIndex === WHEEL_SECTORS.length - 1 ? '🎰 ДЖЕКПОТ!' : '🎉 Выигрыш!', {
+      .text(0, -42, sectorIndex === WHEEL_SECTORS.length - 1 ? '🎰 ДЖЕКПОТ!' : '🎉 Выигрыш!', {
         fontSize: '20px',
-        fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif',
-        color: '#3a2c1a',
+        fontStyle: '900',
+        fontFamily: FONT,
+        color: UI_COLORS.textBrown,
       })
       .setOrigin(0.5);
     const prize = this.add
-      .text(0, -5, sector.label, { fontSize: '22px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#e30613' })
+      .text(0, -8, sector.label, { fontSize: '22px', fontStyle: '800', fontFamily: FONT, color: '#e30613' })
       .setOrigin(0.5);
-    const ok = this.add.rectangle(0, 45, 140, 40, 0x58b53c).setInteractive({ useHandCursor: true });
-    const okText = this.add
-      .text(0, 45, 'Забрать', { fontSize: '16px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#ffffff' })
-      .setOrigin(0.5);
-    c.add([bg, title, prize, ok, okText]);
+    c.add([bg, title, prize]);
 
-    this.tweens.add({ targets: c, scale: 1, duration: 300, ease: 'Back.easeOut' });
-    ok.on('pointerdown', () => {
+    const ok = chunkyButton(this, 0, 45, 144, 42, 'Забрать', 16, () => {
       if (sector.effect.couponRewardId) getApp().ui.toast?.('Купон добавлен в «Мои награды»', '🎟️');
       c.destroy();
     });
+    ok.setColor(0x58b53c, 0x3d7f29);
+    c.add(ok.container);
+
+    this.tweens.add({ targets: c, scale: 1, duration: 300, ease: 'Back.easeOut' });
   }
 }

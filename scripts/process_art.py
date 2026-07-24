@@ -137,10 +137,46 @@ def process_bg(path: Path, prefix: str):
     print(f'{prefix}/bg.png ok')
 
 
+def process_common(path: Path):
+    """Лист из трёх иконок: сундук, капля, монета."""
+    im = remove_bg(Image.open(path), is_white)
+    cols = split_columns(im, min_gap=30, min_width=60)
+    print(f'{path.name}: found {len(cols)} columns')
+    assert len(cols) == 3, f'ожидалось 3 иконки, найдено {len(cols)}'
+    (OUT / 'common').mkdir(parents=True, exist_ok=True)
+    for (name, target_h), (x0, x1) in zip([('chest', 46), ('drop', 22), ('coin', 20)], cols):
+        sprite = resize_h(crop_sprite(im, x0, x1), target_h)
+        sprite.save(OUT / 'common' / f'{name}.png')
+        print(f'  common/{name}.png {sprite.size}')
+
+
+def process_nav(path: Path):
+    """Лист из пяти иконок нижней навигации."""
+    im = remove_bg(Image.open(path), is_white)
+    cols = split_columns(im, min_gap=12, min_width=40)
+    # Составные иконки (две фигурки «друзей») могут распасться на колонки —
+    # сливаем ближайшие, пока не останется ровно 5
+    while len(cols) > 5:
+        gaps = [cols[i + 1][0] - cols[i][1] for i in range(len(cols) - 1)]
+        i = gaps.index(min(gaps))
+        cols = cols[:i] + [(cols[i][0], cols[i + 1][1])] + cols[i + 2 :]
+    print(f'{path.name}: found {len(cols)} columns')
+    assert len(cols) == 5, f'ожидалось 5 иконок, найдено {len(cols)}'
+    (OUT / 'common').mkdir(parents=True, exist_ok=True)
+    for name, (x0, x1) in zip(['garden', 'tasks', 'rewards', 'friends', 'album'], cols):
+        sprite = resize_h(crop_sprite(im, x0, x1), 48)
+        sprite.save(OUT / 'common' / f'nav-{name}.png')
+        print(f'  common/nav-{name}.png {sprite.size}')
+
+
 if __name__ == '__main__':
     process_bg(SRC / 'py-bg.png', 'py')
     process_bg(SRC / 'pk-bg.png', 'pk')
     process_tree_sheet(SRC / 'apple-tree-sheet.png', OUT / 'py')
     process_tree_sheet(SRC / 'pear-tree-sheet.png', OUT / 'pk')
     process_fruits(SRC / 'fruit-icons.png')
+    if (SRC / 'common-icons.png').exists():
+        process_common(SRC / 'common-icons.png')
+    if (SRC / 'nav-icons.png').exists():
+        process_nav(SRC / 'nav-icons.png')
     print('done')

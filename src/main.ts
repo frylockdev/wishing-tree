@@ -1,4 +1,8 @@
 import Phaser from 'phaser';
+import '@fontsource/nunito/400.css';
+import '@fontsource/nunito/700.css';
+import '@fontsource/nunito/800.css';
+import '@fontsource/nunito/900.css';
 import './style.css';
 import { initApp } from './app';
 import { applyThemeCss } from './config/themes';
@@ -20,6 +24,16 @@ initToasts(uiRoot);
 initOverlay(uiRoot);
 initNav(uiRoot);
 initDevPanel(uiRoot);
+
+// Ждём шрифт до старта Phaser, чтобы canvas-тексты сразу рисовались Nunito
+try {
+  await Promise.race([
+    Promise.all(['400', '700', '800', '900'].map((w) => document.fonts.load(`${w} 16px Nunito`))),
+    new Promise((resolve) => setTimeout(resolve, 1500)),
+  ]);
+} catch {
+  // без шрифта тоже работаем
+}
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,

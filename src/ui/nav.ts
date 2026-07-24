@@ -5,11 +5,11 @@ import { openFriendsPanel } from './friends';
 import { openAlbumPanel } from './album';
 
 const TABS = [
-  { id: 'garden', icon: '🌳', label: 'Сад' },
-  { id: 'tasks', icon: '📋', label: 'Задания' },
-  { id: 'rewards', icon: '🎁', label: 'Награды' },
-  { id: 'friends', icon: '👥', label: 'Друзья' },
-  { id: 'album', icon: '📖', label: 'Альбом' },
+  { id: 'garden', label: 'Сад' },
+  { id: 'tasks', label: 'Задания' },
+  { id: 'rewards', label: 'Награды' },
+  { id: 'friends', label: 'Друзья' },
+  { id: 'album', label: 'Альбом' },
 ] as const;
 
 export function initNav(root: HTMLElement): void {
@@ -17,7 +17,7 @@ export function initNav(root: HTMLElement): void {
   TABS.forEach((tab) => {
     const btn = el<HTMLButtonElement>(`
       <button data-tab="${tab.id}" class="${tab.id === 'garden' ? 'active' : ''}">
-        <span class="nav-icon">${tab.icon}</span>
+        <img class="nav-icon" src="assets/common/nav-${tab.id}.png" alt="${tab.label}">
         <span class="nav-label">${tab.label}</span>
       </button>
     `);

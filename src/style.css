@@ -3,7 +3,11 @@
   --primary-dark: #b00510;
   --accent: #ffc700;
   --panel-bg: #fff8ec;
-  --text: #3a2c1a;
+  --cream: #fffdf6;
+  --cream-border: #ecdfc3;
+  --text: #4a3823;
+  --text-soft: #9b8767;
+  --shadow-soft: 0 2px 10px rgba(90, 65, 25, 0.1);
   --frame-w: 360px;
   --frame-h: 640px;
 }
@@ -19,7 +23,7 @@ html,
 body {
   height: 100%;
   overflow: hidden;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Nunito', 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: #2b2438;
   color: var(--text);
 }
@@ -78,8 +82,12 @@ body {
   bottom: 0;
   height: 62px;
   display: flex;
-  background: #ffffff;
-  border-top: 2px solid #00000014;
+  gap: 2px;
+  padding: 5px 6px 6px;
+  background: var(--cream);
+  border-top: 2px solid var(--cream-border);
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -4px 16px rgba(90, 65, 25, 0.12);
   pointer-events: auto;
   z-index: 30;
 }
@@ -88,29 +96,41 @@ body {
   flex: 1;
   border: none;
   background: none;
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
   cursor: pointer;
-  color: #8a8070;
+  color: var(--text-soft);
   font-family: inherit;
+  transition: background 0.15s, transform 0.15s;
+}
+
+#nav button:active {
+  transform: scale(0.94);
 }
 
 #nav button.active {
   color: var(--primary);
-  background: color-mix(in srgb, var(--primary) 8%, #ffffff);
+  background: color-mix(in srgb, var(--primary) 10%, var(--cream));
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--primary) 25%, transparent);
 }
 
 #nav .nav-icon {
-  font-size: 20px;
-  line-height: 1;
+  height: 24px;
+  width: auto;
+  transition: transform 0.15s;
+}
+
+#nav button.active .nav-icon {
+  transform: scale(1.12);
 }
 
 #nav .nav-label {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 /* ---------- Панели ---------- */
@@ -131,7 +151,7 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(#fdf6e3, #f3ecd8);
+  background: linear-gradient(#faf1dd, #f3e7cd);
   animation: panel-in 0.22s ease-out;
 }
 
@@ -151,30 +171,44 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  background: var(--primary);
+  background: linear-gradient(160deg, var(--primary), var(--primary-dark));
   color: #ffffff;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--primary) 35%, transparent);
 }
 
 .panel-title {
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .panel-close {
   border: none;
-  background: #ffffff33;
+  background: #ffffff2e;
   color: #ffffff;
   width: 30px;
   height: 30px;
   border-radius: 50%;
   font-size: 14px;
+  font-family: inherit;
   cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.panel-close:active {
+  transform: scale(0.9);
+}
+
+.panel-close:hover {
+  background: #ffffff4d;
 }
 
 .panel-body {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #d9cdae transparent;
 }
 
 .section {
@@ -195,11 +229,12 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #ffffff;
-  border-radius: 14px;
+  background: var(--cream);
+  border: 2px solid var(--cream-border);
+  border-radius: 16px;
   padding: 10px 12px;
   margin-bottom: 8px;
-  box-shadow: 0 2px 6px rgba(80, 60, 20, 0.08);
+  box-shadow: var(--shadow-soft);
 }
 
 .card.claimed {
@@ -222,70 +257,96 @@ body {
 }
 
 .bar {
-  height: 8px;
+  height: 9px;
   background: #ece4d2;
-  border-radius: 4px;
+  border-radius: 5px;
   margin: 5px 0 3px;
   overflow: hidden;
 }
 
 .bar-fill {
   height: 100%;
-  background: #58b53c;
-  border-radius: 4px;
+  background: linear-gradient(#7ccb5a, #58b53c);
+  border-radius: 5px;
   transition: width 0.3s;
 }
 
+/* «Игрушечные» кнопки с объёмным нижним краем */
 .btn {
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 9px 14px;
   font-size: 13px;
   font-weight: 800;
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
-  transition: transform 0.1s;
+  transition: transform 0.08s, box-shadow 0.08s;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.22);
 }
 
 .btn:active {
-  transform: scale(0.95);
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.22);
 }
 
 .btn:disabled {
   opacity: 0.5;
   cursor: default;
+  box-shadow: none;
+  transform: none;
 }
 
 .btn.primary {
-  background: var(--primary);
+  background: linear-gradient(var(--primary), color-mix(in srgb, var(--primary) 82%, #000000));
   color: #ffffff;
+  box-shadow: 0 3px 0 var(--primary-dark);
+}
+
+.btn.primary:active {
+  box-shadow: 0 1px 0 var(--primary-dark);
 }
 
 .btn.accent {
-  background: var(--accent);
+  background: linear-gradient(#ffd23f, var(--accent));
   color: #3a2c1a;
+  box-shadow: 0 3px 0 #c79a00;
+}
+
+.btn.accent:active {
+  box-shadow: 0 1px 0 #c79a00;
 }
 
 .btn.ghost {
-  background: #f0e9d8;
+  background: #f2ebd9;
   color: #6a5c40;
+  box-shadow: 0 3px 0 #d9cdae;
+}
+
+.btn.ghost:active {
+  box-shadow: 0 1px 0 #d9cdae;
 }
 
 .btn.help {
-  background: #3fa9f5;
+  background: linear-gradient(#5cb8f8, #3fa9f5);
   color: #ffffff;
+  box-shadow: 0 3px 0 #2277bb;
+}
+
+.btn.help:active {
+  box-shadow: 0 1px 0 #2277bb;
 }
 
 .btn.big {
   padding: 12px 22px;
   font-size: 15px;
-  border-radius: 14px;
+  border-radius: 16px;
 }
 
 .btn.danger {
   background: #c62828;
   color: #fff;
+  box-shadow: 0 3px 0 #8a1c1c;
 }
 
 .chip.done {
@@ -327,12 +388,13 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #ffffffee;
+  background: color-mix(in srgb, var(--cream) 94%, transparent);
+  border: 2px solid var(--cream-border);
   border-radius: 20px;
   padding: 8px 16px;
   font-size: 13px;
-  font-weight: 700;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(90, 65, 25, 0.2);
   opacity: 0;
   transform: translateY(-10px);
   transition: all 0.25s;
@@ -367,12 +429,13 @@ body {
   width: 300px;
   max-height: 540px;
   overflow-y: auto;
-  background: #fffdf6;
-  border-radius: 20px;
+  background: linear-gradient(var(--cream), #fdf5e2);
+  border: 3px solid var(--cream-border);
+  border-radius: 24px;
   padding: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
   transform: scale(0.92);
-  transition: transform 0.25s;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .modal-backdrop.show .modal-box {
@@ -430,21 +493,24 @@ body {
 
 .sapling-card {
   flex: 1;
-  border: 3px solid #e8dfc8;
-  border-radius: 16px;
+  border: 3px solid var(--cream-border);
+  border-radius: 18px;
   background: #ffffff;
   padding: 16px 10px;
   cursor: pointer;
   font-family: inherit;
-  transition: border-color 0.15s, transform 0.1s;
+  box-shadow: 0 3px 0 var(--cream-border);
+  transition: border-color 0.15s, transform 0.1s, box-shadow 0.1s;
 }
 
 .sapling-card:active {
-  transform: scale(0.96);
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--cream-border);
 }
 
 .sapling-card:hover {
   border-color: var(--accent);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 60%, #ffffff);
 }
 
 .sapling-emoji {
@@ -495,12 +561,13 @@ body {
   align-items: baseline;
   gap: 8px;
   font-size: 22px;
-  font-weight: 800;
-  background: #ffffff;
-  border-radius: 14px;
+  font-weight: 900;
+  background: var(--cream);
+  border: 2px solid var(--cream-border);
+  border-radius: 16px;
   padding: 12px 16px;
   margin-bottom: 10px;
-  box-shadow: 0 2px 6px rgba(80, 60, 20, 0.08);
+  box-shadow: var(--shadow-soft);
 }
 
 .tabs {
@@ -512,19 +579,25 @@ body {
 .tab {
   flex: 1;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 9px;
   font-size: 13px;
   font-weight: 800;
   font-family: inherit;
-  background: #f0e9d8;
-  color: #8a7a5c;
+  background: #f2ebd9;
+  color: var(--text-soft);
   cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+
+.tab:active {
+  transform: scale(0.96);
 }
 
 .tab.active {
-  background: var(--primary);
+  background: linear-gradient(160deg, var(--primary), var(--primary-dark));
   color: #ffffff;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary) 40%, transparent);
 }
 
 .reward-icon {
@@ -794,11 +867,12 @@ body {
 }
 
 .album-card {
-  background: #ffffff;
-  border-radius: 14px;
+  background: var(--cream);
+  border: 2px solid var(--cream-border);
+  border-radius: 16px;
   padding: 14px;
   text-align: center;
-  box-shadow: 0 2px 6px rgba(80, 60, 20, 0.08);
+  box-shadow: var(--shadow-soft);
 }
 
 .album-emoji {
