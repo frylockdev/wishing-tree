@@ -24,7 +24,7 @@ export class WheelScene extends Phaser.Scene {
     });
 
     this.add
-      .text(CX, 80, '🎡 Колесо удачи', { fontSize: '24px', fontStyle: 'bold', color: '#ffffff' })
+      .text(CX, 80, '🎡 Колесо удачи', { fontSize: '24px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#ffffff' })
       .setOrigin(0.5);
 
     this.buildWheel();
@@ -37,17 +37,17 @@ export class WheelScene extends Phaser.Scene {
     this.spinBtnBg = this.add.rectangle(0, 0, 220, 52, 0xffc700).setStrokeStyle(3, 0xffffff);
     this.spinBtnBg.setInteractive({ useHandCursor: true });
     this.spinBtnText = this.add
-      .text(0, 0, '', { fontSize: '18px', fontStyle: 'bold', color: '#3a2c1a' })
+      .text(0, 0, '', { fontSize: '18px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#3a2c1a' })
       .setOrigin(0.5);
     btn.add([this.spinBtnBg, this.spinBtnText]);
     this.spinBtnBg.on('pointerdown', () => this.onSpin());
 
     this.hintText = this.add
-      .text(CX, 540, '', { fontSize: '13px', color: '#ffffffcc' })
+      .text(CX, 540, '', { fontSize: '13px', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#ffffffcc' })
       .setOrigin(0.5);
 
     const closeBtn = this.add
-      .text(336, 24, '✕', { fontSize: '24px', fontStyle: 'bold', color: '#ffffff' })
+      .text(336, 24, '✕', { fontSize: '24px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#ffffff' })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
     closeBtn.on('pointerdown', () => {
@@ -81,7 +81,7 @@ export class WheelScene extends Phaser.Scene {
       const label = this.add
         .text(Math.cos(mid) * (R - 42), Math.sin(mid) * (R - 42), sector.short, {
           fontSize: '15px',
-          fontStyle: 'bold',
+          fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif',
           color: '#ffffff',
           stroke: '#00000055',
           strokeThickness: 3,
@@ -151,16 +151,16 @@ export class WheelScene extends Phaser.Scene {
     const title = this.add
       .text(0, -40, sectorIndex === WHEEL_SECTORS.length - 1 ? '🎰 ДЖЕКПОТ!' : '🎉 Выигрыш!', {
         fontSize: '20px',
-        fontStyle: 'bold',
+        fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif',
         color: '#3a2c1a',
       })
       .setOrigin(0.5);
     const prize = this.add
-      .text(0, -5, sector.label, { fontSize: '22px', fontStyle: 'bold', color: '#e30613' })
+      .text(0, -5, sector.label, { fontSize: '22px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#e30613' })
       .setOrigin(0.5);
     const ok = this.add.rectangle(0, 45, 140, 40, 0x58b53c).setInteractive({ useHandCursor: true });
     const okText = this.add
-      .text(0, 45, 'Забрать', { fontSize: '16px', fontStyle: 'bold', color: '#ffffff' })
+      .text(0, 45, 'Забрать', { fontSize: '16px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#ffffff' })
       .setOrigin(0.5);
     c.add([bg, title, prize, ok, okText]);
 

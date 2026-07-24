@@ -12,6 +12,7 @@ export function floatText(
     .text(x, y, text, {
       fontSize: '22px',
       fontStyle: 'bold',
+      fontFamily: 'Trebuchet MS, Arial, sans-serif',
       color,
       stroke: '#00000055',
       strokeThickness: 4,

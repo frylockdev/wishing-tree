@@ -44,7 +44,9 @@ export class GardenScene extends Phaser.Scene {
     const bg = this.add.image(0, 0, `${p}-bg`).setOrigin(0);
     bg.setDisplaySize(360, 640);
 
-    this.tree = this.add.image(TREE_X, TREE_Y, `${p}-tree-1`).setOrigin(0.5, 1);
+    this.tree = this.add
+      .image(TREE_X, TREE_Y, `tree-${store.state.tree.fruit}-${store.state.tree.stage}`)
+      .setOrigin(0.5, 1);
 
     this.buildHud();
     this.buildProgressPanel();
@@ -67,7 +69,7 @@ export class GardenScene extends Phaser.Scene {
     const text = this.add
       .text(34, 16, '0', {
         fontSize: '15px',
-        fontStyle: 'bold',
+        fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif',
         color: '#3a2c1a',
       })
       .setOrigin(0, 0.5);
@@ -79,12 +81,12 @@ export class GardenScene extends Phaser.Scene {
     this.dropsText = this.pill(10, 12, 'drop').text;
     this.coinsText = this.pill(10, 52, 'coin').text;
     const { theme } = getApp();
-    this.harvestText = this.pill(246, 12, `${theme.assetPrefix}-fruit`).text;
+    this.harvestText = this.pill(246, 12, `fruit-${theme.fruit}`).text;
 
     this.fertBadge = this.add
       .text(350, 56, '⚡ Удобрение ×2', {
         fontSize: '12px',
-        fontStyle: 'bold',
+        fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif',
         color: '#2a7d16',
         backgroundColor: '#e8ffdd',
         padding: { x: 8, y: 4 },
@@ -100,14 +102,14 @@ export class GardenScene extends Phaser.Scene {
     const bg = this.add.rectangle(0, 0, 300, 54, 0xffffff, 0.92);
     bg.setStrokeStyle(2, 0x000000, 0.15);
     this.stageText = this.add
-      .text(0, -13, '', { fontSize: '14px', fontStyle: 'bold', color: '#3a2c1a' })
+      .text(0, -13, '', { fontSize: '15px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#3a2c1a' })
       .setOrigin(0.5);
     const barBg = this.add.rectangle(-10, 12, 240, 12, 0xe4dccb).setOrigin(0, 0.5);
     barBg.setStrokeStyle(1, 0x000000, 0.15);
     barBg.x = -140 + 10;
     this.progressFill = this.add.rectangle(barBg.x, 12, 0, 12, 0x58b53c).setOrigin(0, 0.5);
     this.progressPct = this.add
-      .text(128, 12, '0%', { fontSize: '12px', fontStyle: 'bold', color: '#3a2c1a' })
+      .text(128, 12, '0%', { fontSize: '12px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#3a2c1a' })
       .setOrigin(1, 0.5);
     panel.add([bg, this.stageText, barBg, this.progressFill, this.progressPct]);
   }
@@ -120,14 +122,14 @@ export class GardenScene extends Phaser.Scene {
       .setStrokeStyle(3, 0xffffff);
     this.actionBg.setInteractive({ useHandCursor: true });
     this.actionLabel = this.add
-      .text(0, 0, 'Полить', { fontSize: '22px', fontStyle: 'bold', color: '#ffffff' })
+      .text(0, 0, 'Полить', { fontSize: '22px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#ffffff' })
       .setOrigin(0.5);
 
     this.actionCost = this.add.container(96, 0);
     const costBg = this.add.circle(0, 0, 18, 0xffffff).setStrokeStyle(2, 0x000000, 0.15);
     const costIcon = this.add.image(0, -6, 'drop').setScale(0.7);
     const costText = this.add
-      .text(0, 7, String(ECONOMY.waterCost), { fontSize: '11px', fontStyle: 'bold', color: '#2277bb' })
+      .text(0, 7, String(ECONOMY.waterCost), { fontSize: '11px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#2277bb' })
       .setOrigin(0.5);
     this.actionCost.add([costBg, costIcon, costText]);
 
@@ -144,7 +146,7 @@ export class GardenScene extends Phaser.Scene {
     this.chestTimer = this.add
       .text(0, 24, '', {
         fontSize: '11px',
-        fontStyle: 'bold',
+        fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif',
         color: '#ffffff',
         backgroundColor: '#00000066',
         padding: { x: 6, y: 2 },
@@ -162,7 +164,7 @@ export class GardenScene extends Phaser.Scene {
     const label = this.add
       .text(0, 24, 'Колесо', {
         fontSize: '11px',
-        fontStyle: 'bold',
+        fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif',
         color: '#ffffff',
         backgroundColor: '#00000066',
         padding: { x: 6, y: 2 },
@@ -172,7 +174,7 @@ export class GardenScene extends Phaser.Scene {
     this.wheelBadge = this.add.container(18, -26);
     const badgeBg = this.add.circle(0, 0, 9, 0xe30613);
     const badgeText = this.add
-      .text(0, 0, '1', { fontSize: '11px', fontStyle: 'bold', color: '#ffffff' })
+      .text(0, 0, '1', { fontSize: '11px', fontStyle: 'bold', fontFamily: 'Trebuchet MS, Arial, sans-serif', color: '#ffffff' })
       .setOrigin(0.5);
     this.wheelBadge.add([badgeBg, badgeText]);
 
@@ -184,7 +186,7 @@ export class GardenScene extends Phaser.Scene {
 
   private async onAction() {
     if (this.busy) return;
-    const { api, store, ui, theme } = getApp();
+    const { api, store, ui } = getApp();
     this.busy = true;
     try {
       if (store.state.tree.readyToHarvest) {
@@ -193,12 +195,13 @@ export class GardenScene extends Phaser.Scene {
           ui.toast?.(res.error, '⚠️');
           return;
         }
+        const fruitTexture = `fruit-${store.state.tree.fruit}`;
         const target = new Phaser.Math.Vector2(320, 28);
         burstFruits(
           this,
           new Phaser.Math.Vector2(TREE_X, TREE_Y - 140),
           target,
-          `${theme.assetPrefix}-fruit`,
+          fruitTexture,
           10,
           () => {
             ui.toast?.(`Урожай собран: +${res.amount} 🎉`);
@@ -280,13 +283,12 @@ export class GardenScene extends Phaser.Scene {
 
   private refresh(state: GameState) {
     const { theme } = getApp();
-    const p = theme.assetPrefix;
 
     this.dropsText.setText(String(state.drops));
     this.coinsText.setText(String(state.coins));
     this.harvestText.setText(String(state.harvest));
 
-    const key = `${p}-tree-${state.tree.stage}`;
+    const key = `tree-${state.tree.fruit}-${state.tree.stage}`;
     if (this.tree.texture.key !== key) this.tree.setTexture(key);
 
     const pct = state.tree.readyToHarvest ? 100 : stageProgressPct(state, ECONOMY);

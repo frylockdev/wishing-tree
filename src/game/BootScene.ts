@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { getApp } from '../app';
-import type { BrandTheme } from '../config/themes';
+import { THEMES, type BrandTheme } from '../config/themes';
 
 /**
  * Грузит арт активной темы из public/assets; если файла нет —
@@ -14,8 +14,13 @@ export class BootScene extends Phaser.Scene {
   preload() {
     const p = getApp().theme.assetPrefix;
     this.load.image(`${p}-bg`, `assets/${p}/bg.png`);
-    for (let s = 1; s <= 5; s++) this.load.image(`${p}-tree-${s}`, `assets/${p}/tree-${s}.png`);
-    this.load.image(`${p}-fruit`, `assets/${p}/fruit.png`);
+    // Деревья и фрукты грузим для обоих видов: саженец можно выбрать любой
+    for (let s = 1; s <= 5; s++) {
+      this.load.image(`tree-apple-${s}`, `assets/py/tree-${s}.png`);
+      this.load.image(`tree-pear-${s}`, `assets/pk/tree-${s}.png`);
+    }
+    this.load.image('fruit-apple', 'assets/py/fruit.png');
+    this.load.image('fruit-pear', 'assets/pk/fruit.png');
     this.load.image('chest', 'assets/common/chest.png');
     this.load.image('drop', 'assets/common/drop.png');
     this.load.image('coin', 'assets/common/coin.png');
@@ -27,10 +32,13 @@ export class BootScene extends Phaser.Scene {
     const missing = (key: string) => !this.textures.exists(key);
 
     if (missing(`${p}-bg`)) this.makeBg(`${p}-bg`, theme);
-    for (let s = 1; s <= 5; s++) {
-      if (missing(`${p}-tree-${s}`)) this.makeTree(`${p}-tree-${s}`, s, theme);
+    for (const [fruit, prefix] of [['apple', 'py'], ['pear', 'pk']] as const) {
+      const fruitTheme = prefix === 'py' ? THEMES.pyaterochka : THEMES.perekrestok;
+      for (let s = 1; s <= 5; s++) {
+        if (missing(`tree-${fruit}-${s}`)) this.makeTree(`tree-${fruit}-${s}`, s, fruitTheme);
+      }
+      if (missing(`fruit-${fruit}`)) this.makeFruit(`fruit-${fruit}`, fruitTheme);
     }
-    if (missing(`${p}-fruit`)) this.makeFruit(`${p}-fruit`, theme);
     if (missing('chest')) this.makeChest();
     if (missing('drop')) this.makeDrop();
     if (missing('coin')) this.makeCoin();
