@@ -62,8 +62,8 @@ body {
 
 #game-root canvas {
   display: block;
-  width: 100% !important;
-  height: 100% !important;
+  /* Не форсим 100% — Phaser сам выставляет CSS-размер под FIT+HiDPI */
+  image-rendering: auto;
 }
 
 #ui-root {

@@ -35,15 +35,27 @@ try {
   // без шрифта тоже работаем
 }
 
+// HiDPI: рендерим в devicePixelRatio (до 3×), координаты сцен остаются 360×640
+const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1), 3);
+
 const game = new Phaser.Game({
-  type: Phaser.AUTO,
+  type: Phaser.WEBGL,
   parent: 'game-root',
   width: 360,
   height: 640,
   backgroundColor: '#87ceeb',
+  antialias: true,
+  roundPixels: false,
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
+    zoom: dpr,
+  },
+  render: {
+    antialias: true,
+    roundPixels: false,
+    powerPreference: 'high-performance',
+    mipmapFilter: 'LINEAR_MIPMAP_LINEAR',
   },
   scene: [BootScene, GardenScene, WheelScene],
 });

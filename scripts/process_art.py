@@ -131,10 +131,32 @@ def process_fruits(path: Path):
         print(f'  {prefix}/fruit.png {sprite.size}')
 
 
+def crop_to_aspect(im: Image.Image, aspect: float) -> Image.Image:
+    """Центральный кроп под нужное соотношение сторон (ширина/высота)."""
+    w, h = im.size
+    current = w / h
+    if abs(current - aspect) < 0.001:
+        return im
+    if current > aspect:
+        # слишком широкий — обрезаем по бокам
+        new_w = max(1, int(round(h * aspect)))
+        left = (w - new_w) // 2
+        return im.crop((left, 0, left + new_w, h))
+    # слишком высокий — обрезаем сверху/снизу, чуть смещаем вниз (грядка важнее неба)
+    new_h = max(1, int(round(w / aspect)))
+    top = max(0, int((h - new_h) * 0.35))
+    if top + new_h > h:
+        top = h - new_h
+    return im.crop((0, top, w, top + new_h))
+
+
 def process_bg(path: Path, prefix: str):
+    """Кроп в 9:16 (игровой вьюпорт) и ресайз до 1080×1920 (3×) для HiDPI."""
     (OUT / prefix).mkdir(parents=True, exist_ok=True)
-    Image.open(path).convert('RGB').save(OUT / prefix / 'bg.png', optimize=True)
-    print(f'{prefix}/bg.png ok')
+    im = crop_to_aspect(Image.open(path).convert('RGB'), 9 / 16)
+    im = im.resize((1080, 1920), Image.LANCZOS)
+    im.save(OUT / prefix / 'bg.png', optimize=True)
+    print(f'{prefix}/bg.png {im.size} ok')
 
 
 def process_common(path: Path):

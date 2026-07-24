@@ -41,8 +41,11 @@ export class GardenScene extends Phaser.Scene {
     const { store, theme } = getApp();
     const p = theme.assetPrefix;
 
+    // Фон уже в 9:16 (1080×1920) — равномерный scale без искажений
     const bg = this.add.image(0, 0, `${p}-bg`).setOrigin(0);
     bg.setDisplaySize(360, 640);
+    bg.setScrollFactor(0);
+    bg.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
 
     this.tree = this.add
       .image(TREE_X, TREE_Y, `tree-${store.state.tree.fruit}-${store.state.tree.stage}`)
