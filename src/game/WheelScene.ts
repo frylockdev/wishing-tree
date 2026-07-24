@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { getApp } from '../app';
 import { ECONOMY, WHEEL_SECTORS } from '../config/economy';
-import { FONT, UI_COLORS, chunkyButton, roundRectTexture, type ChunkyButton } from './uikit';
+import { applyCameraHiDPI } from './hidpi';
+import { UI_COLORS, chunkyButton, roundRectImage, txt, type ChunkyButton } from './uikit';
 
 const CX = 180;
 const CY = 290;
@@ -18,21 +19,20 @@ export class WheelScene extends Phaser.Scene {
   }
 
   create() {
+    applyCameraHiDPI(this);
+
     const backdrop = this.add.rectangle(180, 320, 360, 640, 0x000000, 0.65).setInteractive();
     backdrop.on('pointerdown', () => {
       if (!this.spinning) this.scene.stop();
     });
 
-    this.add
-      .text(CX, 80, '🎡 Колесо удачи', {
-        fontSize: '24px',
-        fontStyle: '900',
-        fontFamily: FONT,
-        color: '#ffffff',
-        stroke: '#00000044',
-        strokeThickness: 4,
-      })
-      .setOrigin(0.5);
+    txt(this, CX, 80, '🎡 Колесо удачи', {
+      fontSize: '24px',
+      fontStyle: '900',
+      color: '#ffffff',
+      stroke: '#00000044',
+      strokeThickness: 4,
+    }).setOrigin(0.5);
 
     this.buildWheel();
 
@@ -44,12 +44,13 @@ export class WheelScene extends Phaser.Scene {
     this.spinBtn.setColor(0xffc700, 0xc79a00);
     this.spinBtn.label.setColor('#3a2c1a');
 
-    this.hintText = this.add
-      .text(CX, 540, '', { fontSize: '13px', fontStyle: '700', fontFamily: FONT, color: '#ffffffcc' })
-      .setOrigin(0.5);
+    this.hintText = txt(this, CX, 540, '', {
+      fontSize: '13px',
+      fontStyle: '700',
+      color: '#ffffffcc',
+    }).setOrigin(0.5);
 
-    const closeBtn = this.add
-      .text(336, 24, '✕', { fontSize: '24px', fontStyle: 'bold', fontFamily: FONT, color: '#ffffff' })
+    const closeBtn = txt(this, 336, 24, '✕', { fontSize: '24px', fontStyle: 'bold', color: '#ffffff' })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
     closeBtn.on('pointerdown', () => {
@@ -80,21 +81,19 @@ export class WheelScene extends Phaser.Scene {
 
     WHEEL_SECTORS.forEach((sector, i) => {
       const mid = Phaser.Math.DegToRad(i * seg + seg / 2);
-      const label = this.add
-        .text(Math.cos(mid) * (R - 42), Math.sin(mid) * (R - 42), sector.short, {
-          fontSize: '15px',
-          fontStyle: '800',
-          fontFamily: FONT,
-          color: '#ffffff',
-          stroke: '#00000055',
-          strokeThickness: 3,
-        })
+      const label = txt(this, Math.cos(mid) * (R - 42), Math.sin(mid) * (R - 42), sector.short, {
+        fontSize: '15px',
+        fontStyle: '800',
+        color: '#ffffff',
+        stroke: '#00000055',
+        strokeThickness: 3,
+      })
         .setOrigin(0.5)
         .setAngle(i * seg + seg / 2 + 90);
       this.wheel.add(label);
     });
 
-    const hub = this.add.text(0, 0, '🎯', { fontSize: '20px' }).setOrigin(0.5);
+    const hub = txt(this, 0, 0, '🎯', { fontSize: '20px' }).setOrigin(0.5);
     this.wheel.add(hub);
   }
 
@@ -150,22 +149,20 @@ export class WheelScene extends Phaser.Scene {
   private showPrize(sectorIndex: number) {
     const sector = WHEEL_SECTORS[sectorIndex];
     const c = this.add.container(CX, CY).setDepth(20).setScale(0);
-    const panelKey = roundRectTexture(this, 'wheel-prize-panel', 264, 156, 22, UI_COLORS.cream, {
+    const bg = roundRectImage(this, 0, 0, 264, 156, 22, UI_COLORS.cream, {
       stroke: 0xffc700,
       strokeWidth: 4,
     });
-    const bg = this.add.image(0, 0, panelKey);
-    const title = this.add
-      .text(0, -42, sectorIndex === WHEEL_SECTORS.length - 1 ? '🎰 ДЖЕКПОТ!' : '🎉 Выигрыш!', {
-        fontSize: '20px',
-        fontStyle: '900',
-        fontFamily: FONT,
-        color: UI_COLORS.textBrown,
-      })
-      .setOrigin(0.5);
-    const prize = this.add
-      .text(0, -8, sector.label, { fontSize: '22px', fontStyle: '800', fontFamily: FONT, color: '#e30613' })
-      .setOrigin(0.5);
+    const title = txt(this, 0, -42, sectorIndex === WHEEL_SECTORS.length - 1 ? '🎰 ДЖЕКПОТ!' : '🎉 Выигрыш!', {
+      fontSize: '20px',
+      fontStyle: '900',
+      color: UI_COLORS.textBrown,
+    }).setOrigin(0.5);
+    const prize = txt(this, 0, -8, sector.label, {
+      fontSize: '22px',
+      fontStyle: '800',
+      color: '#e30613',
+    }).setOrigin(0.5);
     c.add([bg, title, prize]);
 
     const ok = chunkyButton(this, 0, 45, 144, 42, 'Забрать', 16, () => {

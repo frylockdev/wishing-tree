@@ -13,6 +13,11 @@ from PIL import Image, ImageFilter
 SRC = Path(sys.argv[1]) if len(sys.argv) > 1 else Path('art_src')
 OUT = Path('public/assets')
 
+# Спрайты режем в 3× от логического размера сцены (360×640):
+# столько же, сколько буфер canvas (см. RENDER_SCALE в src/game/hidpi.ts),
+# поэтому пиксель текстуры = пиксель буфера, без размытия и пересэмплинга.
+ASSET_SCALE = 3
+
 
 def remove_bg(im: Image.Image, is_bg) -> Image.Image:
     im = im.convert('RGBA')
@@ -87,9 +92,28 @@ def crop_sprite(im: Image.Image, x0: int, x1: int) -> Image.Image:
     return part.crop(bbox)
 
 
-def resize_h(im: Image.Image, target_h: int) -> Image.Image:
+def bleed_edges(im: Image.Image, iterations: int = 5) -> Image.Image:
+    """Заливает RGB прозрачных пикселей цветом соседей.
+
+    remove_bg обнуляет вырезанные пиксели в (0,0,0,0), и LANCZOS при ресайзе
+    подмешивает этот чёрный в кромку — по контуру спрайта появляется грязная
+    тёмная кайма. Растим цвет наружу под альфу, чтобы смешивать было не с чем.
+    """
+    rgb = im.convert('RGB')
+    alpha = im.getchannel('A')
+    mask = alpha.point(lambda v: 255 if v > 0 else 0)
+    for _ in range(iterations):
+        rgb = Image.composite(rgb, rgb.filter(ImageFilter.GaussianBlur(2)), mask)
+        mask = mask.filter(ImageFilter.MaxFilter(5))
+    r, g, b = rgb.split()
+    return Image.merge('RGBA', (r, g, b, alpha))
+
+
+def resize_h(im: Image.Image, logical_h: int) -> Image.Image:
+    """Ресайз под логическую высоту сцены, но в ASSET_SCALE× пикселей."""
+    target_h = logical_h * ASSET_SCALE
     w = round(im.width * target_h / im.height)
-    return im.resize((w, target_h), Image.LANCZOS)
+    return bleed_edges(im).resize((w, target_h), Image.LANCZOS)
 
 
 def split_widest(im: Image.Image, cols):
@@ -151,10 +175,10 @@ def crop_to_aspect(im: Image.Image, aspect: float) -> Image.Image:
 
 
 def process_bg(path: Path, prefix: str):
-    """Кроп в 9:16 (игровой вьюпорт) и ресайз до 1080×1920 (3×) для HiDPI."""
+    """Кроп в 9:16 (игровой вьюпорт) и ресайз до 360×640 × ASSET_SCALE."""
     (OUT / prefix).mkdir(parents=True, exist_ok=True)
     im = crop_to_aspect(Image.open(path).convert('RGB'), 9 / 16)
-    im = im.resize((1080, 1920), Image.LANCZOS)
+    im = im.resize((360 * ASSET_SCALE, 640 * ASSET_SCALE), Image.LANCZOS)
     im.save(OUT / prefix / 'bg.png', optimize=True)
     print(f'{prefix}/bg.png {im.size} ok')
 
@@ -186,7 +210,8 @@ def process_nav(path: Path):
     assert len(cols) == 5, f'ожидалось 5 иконок, найдено {len(cols)}'
     (OUT / 'common').mkdir(parents=True, exist_ok=True)
     for name, (x0, x1) in zip(['garden', 'tasks', 'rewards', 'friends', 'album'], cols):
-        sprite = resize_h(crop_sprite(im, x0, x1), 48)
+        # 24px — высота иконки в CSS (#nav .nav-icon)
+        sprite = resize_h(crop_sprite(im, x0, x1), 24)
         sprite.save(OUT / 'common' / f'nav-{name}.png')
         print(f'  common/nav-{name}.png {sprite.size}')
 

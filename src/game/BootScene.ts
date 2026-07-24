@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
-import { getApp } from '../app';
 import { THEMES, type BrandTheme } from '../config/themes';
 
 /**
- * Грузит арт активной темы из public/assets; если файла нет —
+ * Грузит арт из public/assets; если файла нет —
  * рисует процедурный плейсхолдер, чтобы игра работала до подключения ИИ-арта.
+ * Фон сада грузится отдельно в HTML (#garden-bg) для чёткого HiDPI.
  */
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -12,9 +12,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    const p = getApp().theme.assetPrefix;
-    this.load.image(`${p}-bg`, `assets/${p}/bg.png`);
-    // Деревья и фрукты грузим для обоих видов: саженец можно выбрать любой
+    // Фон больше не грузим в Phaser — он в HTML (#garden-bg) для чёткого HiDPI
     for (let s = 1; s <= 5; s++) {
       this.load.image(`tree-apple-${s}`, `assets/py/tree-${s}.png`);
       this.load.image(`tree-pear-${s}`, `assets/pk/tree-${s}.png`);
@@ -27,11 +25,8 @@ export class BootScene extends Phaser.Scene {
   }
 
   create() {
-    const theme = getApp().theme;
-    const p = theme.assetPrefix;
     const missing = (key: string) => !this.textures.exists(key);
 
-    if (missing(`${p}-bg`)) this.makeBg(`${p}-bg`, theme);
     for (const [fruit, prefix] of [['apple', 'py'], ['pear', 'pk']] as const) {
       const fruitTheme = prefix === 'py' ? THEMES.pyaterochka : THEMES.perekrestok;
       for (let s = 1; s <= 5; s++) {
@@ -44,35 +39,6 @@ export class BootScene extends Phaser.Scene {
     if (missing('coin')) this.makeCoin();
 
     this.scene.start('Garden');
-  }
-
-  private makeBg(key: string, theme: BrandTheme) {
-    const g = this.add.graphics();
-    // Небо
-    g.fillGradientStyle(0x6ec6f0, 0x6ec6f0, 0xbfe8fa, 0xbfe8fa, 1);
-    g.fillRect(0, 0, 360, 400);
-    // Дальние холмы
-    g.fillStyle(0x8fce6e, 1);
-    g.fillEllipse(80, 400, 340, 120);
-    g.fillEllipse(300, 410, 320, 140);
-    // Трава
-    g.fillStyle(0x6db84f, 1);
-    g.fillRect(0, 400, 360, 240);
-    g.fillStyle(0x7cc45e, 1);
-    g.fillEllipse(180, 405, 420, 60);
-    // Солнце
-    g.fillStyle(0xffe27a, 1);
-    g.fillCircle(310, 60, 32);
-    // «Магазин» на заднем плане
-    g.fillStyle(0xf3efe6, 1);
-    g.fillRect(250, 330, 96, 60);
-    g.fillStyle(Phaser.Display.Color.HexStringToColor(theme.colors.primary).color, 1);
-    g.fillRect(244, 316, 108, 20);
-    // Грядка под деревом
-    g.fillStyle(0x8a6238, 1);
-    g.fillEllipse(180, 462, 190, 46);
-    g.generateTexture(key, 360, 640);
-    g.destroy();
   }
 
   private makeTree(key: string, stage: number, theme: BrandTheme) {

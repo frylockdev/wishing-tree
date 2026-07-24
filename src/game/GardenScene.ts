@@ -4,7 +4,8 @@ import { ECONOMY } from '../config/economy';
 import { chestAvailable, chestRemainingHours, stageProgressPct } from '../api/logic';
 import type { GameState, TreeStage } from '../config/types';
 import { burstFruits, floatText, stageFlash } from './effects';
-import { FONT, UI_COLORS, chunkyButton, darken, roundRectTexture, type ChunkyButton } from './uikit';
+import { applyCameraHiDPI, fitHeight, scaleForHeight } from './hidpi';
+import { UI_COLORS, chip, chunkyButton, darken, roundRectImage, txt, type Chip, type ChunkyButton } from './uikit';
 
 const STAGE_NAMES: Record<TreeStage, string> = {
   1: 'Росток',
@@ -17,6 +18,11 @@ const STAGE_NAMES: Record<TreeStage, string> = {
 const TREE_X = 180;
 const TREE_Y = 452;
 
+/** Логическая высота дерева по стадиям — текстуры приходят в 3×. */
+const TREE_H: Record<TreeStage, number> = { 1: 70, 2: 130, 3: 200, 4: 260, 5: 310 };
+/** Логический размер иконок в HUD. */
+const PILL_ICON_H = 22;
+
 export class GardenScene extends Phaser.Scene {
   private tree!: Phaser.GameObjects.Image;
   private dropsText!: Phaser.GameObjects.Text;
@@ -27,10 +33,12 @@ export class GardenScene extends Phaser.Scene {
   private progressPct!: Phaser.GameObjects.Text;
   private actionCost!: Phaser.GameObjects.Container;
   private actionBtn!: ChunkyButton;
-  private chestTimer!: Phaser.GameObjects.Text;
+  private chestTimer!: Chip;
   private chestIcon!: Phaser.GameObjects.Image;
   private wheelBadge!: Phaser.GameObjects.Container;
-  private fertBadge!: Phaser.GameObjects.Text;
+  private fertBadge!: Phaser.GameObjects.Container;
+  /** База для твинов: дерево уже ужато под логическую высоту стадии. */
+  private treeScale = 1;
   private busy = false;
 
   constructor() {
@@ -38,18 +46,15 @@ export class GardenScene extends Phaser.Scene {
   }
 
   create() {
-    const { store, theme } = getApp();
-    const p = theme.assetPrefix;
+    applyCameraHiDPI(this);
 
-    // Фон уже в 9:16 (1080×1920) — равномерный scale без искажений
-    const bg = this.add.image(0, 0, `${p}-bg`).setOrigin(0);
-    bg.setDisplaySize(360, 640);
-    bg.setScrollFactor(0);
-    bg.texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    const { store } = getApp();
+    // Фон рисует HTML-слой #garden-bg — на canvas только дерево и HUD
 
     this.tree = this.add
       .image(TREE_X, TREE_Y, `tree-${store.state.tree.fruit}-${store.state.tree.stage}`)
       .setOrigin(0.5, 1);
+    this.treeScale = fitHeight(this.tree, TREE_H[store.state.tree.stage]);
 
     this.buildHud();
     this.buildProgressPanel();
@@ -65,22 +70,19 @@ export class GardenScene extends Phaser.Scene {
   // ---------- UI строительство ----------
 
   private pill(x: number, y: number, icon: string): { text: Phaser.GameObjects.Text } {
-    const key = roundRectTexture(this, 'ui-pill', 104, 32, 16, UI_COLORS.cream, {
+    const c = this.add.container(x, y).setDepth(50);
+    const bg = roundRectImage(this, 0, 0, 104, 32, 16, UI_COLORS.cream, {
       alpha: 0.95,
       stroke: UI_COLORS.creamBorder,
       strokeWidth: 2,
-    });
-    const c = this.add.container(x, y).setDepth(50);
-    const bg = this.add.image(0, 0, key).setOrigin(0, 0);
-    const iconImg = this.add.image(20, 17, icon).setScale(1.1);
-    const text = this.add
-      .text(36, 17, '0', {
-        fontSize: '15px',
-        fontStyle: '800',
-        fontFamily: FONT,
-        color: UI_COLORS.textBrown,
-      })
-      .setOrigin(0, 0.5);
+    }).setOrigin(0, 0);
+    const iconImg = this.add.image(20, 17, icon);
+    fitHeight(iconImg, PILL_ICON_H);
+    const text = txt(this, 36, 17, '0', {
+      fontSize: '15px',
+      fontStyle: '800',
+      color: UI_COLORS.textBrown,
+    }).setOrigin(0, 0.5);
     c.add([bg, iconImg, text]);
     return { text };
   }
@@ -91,39 +93,39 @@ export class GardenScene extends Phaser.Scene {
     const { theme } = getApp();
     this.harvestText = this.pill(246, 12, `fruit-${theme.fruit}`).text;
 
-    this.fertBadge = this.add
-      .text(350, 56, '⚡ Удобрение ×2', {
-        fontSize: '12px',
-        fontStyle: '800',
-        fontFamily: FONT,
-        color: '#2a7d16',
-        backgroundColor: '#e8ffddee',
-        padding: { x: 10, y: 5 },
-      })
-      .setOrigin(1, 0)
-      .setDepth(50)
-      .setVisible(false);
+    const fert = chip(this, 0, 68, '⚡ Удобрение ×2', {
+      fontSize: 12,
+      color: '#2a7d16',
+      fill: 0xe8ffdd,
+      stroke: 0xb6e3a0,
+      padX: 10,
+      padY: 5,
+    });
+    fert.container.setX(350 - fert.width / 2);
+    this.fertBadge = fert.container.setDepth(50).setVisible(false);
   }
 
   private buildProgressPanel() {
-    const y = 480;
-    const key = roundRectTexture(this, 'ui-panel', 304, 56, 18, UI_COLORS.cream, {
+    const panel = this.add.container(180, 480).setDepth(50);
+    const bg = roundRectImage(this, 0, 0, 304, 56, 18, UI_COLORS.cream, {
       alpha: 0.96,
       stroke: UI_COLORS.creamBorder,
       strokeWidth: 2,
     });
-    const panel = this.add.container(180, y).setDepth(50);
-    const bg = this.add.image(0, 0, key);
-    this.stageText = this.add
-      .text(0, -13, '', { fontSize: '15px', fontStyle: '800', fontFamily: FONT, color: UI_COLORS.textBrown })
-      .setOrigin(0.5);
+    this.stageText = txt(this, 0, -13, '', {
+      fontSize: '15px',
+      fontStyle: '800',
+      color: UI_COLORS.textBrown,
+    }).setOrigin(0.5);
     const barBg = this.add.graphics();
     barBg.fillStyle(0xefe6d0, 1);
     barBg.fillRoundedRect(-136, 6, 230, 12, 6);
     this.progressFill = this.add.graphics();
-    this.progressPct = this.add
-      .text(136, 12, '0%', { fontSize: '12px', fontStyle: '800', fontFamily: FONT, color: UI_COLORS.textBrownSoft })
-      .setOrigin(1, 0.5);
+    this.progressPct = txt(this, 136, 12, '0%', {
+      fontSize: '12px',
+      fontStyle: '800',
+      color: UI_COLORS.textBrownSoft,
+    }).setOrigin(1, 0.5);
     panel.add([bg, this.stageText, barBg, this.progressFill, this.progressPct]);
   }
 
@@ -148,32 +150,27 @@ export class GardenScene extends Phaser.Scene {
 
     this.actionCost = this.add.container(96, 0);
     const costBg = this.add.circle(0, 0, 18, 0xffffff).setStrokeStyle(2, UI_COLORS.creamBorder);
-    const costIcon = this.add.image(0, -6, 'drop').setScale(0.7);
-    const costText = this.add
-      .text(0, 7, String(ECONOMY.waterCost), { fontSize: '11px', fontStyle: '800', fontFamily: FONT, color: '#2277bb' })
-      .setOrigin(0.5);
+    const costIcon = this.add.image(0, -6, 'drop');
+    fitHeight(costIcon, 15);
+    const costText = txt(this, 0, 7, String(ECONOMY.waterCost), {
+      fontSize: '11px',
+      fontStyle: '800',
+      color: '#2277bb',
+    }).setOrigin(0.5);
     this.actionCost.add([costBg, costIcon, costText]);
     this.actionBtn.container.add(this.actionCost);
   }
 
-  private cornerChip(text: string): Phaser.GameObjects.Text {
-    return this.add
-      .text(0, 26, text, {
-        fontSize: '11px',
-        fontStyle: '800',
-        fontFamily: FONT,
-        color: UI_COLORS.textBrown,
-        backgroundColor: '#fffdf6ee',
-        padding: { x: 8, y: 3 },
-      })
-      .setOrigin(0.5);
+  private cornerChip(text: string): Chip {
+    return chip(this, 0, 26, text, { stroke: UI_COLORS.creamBorder });
   }
 
   private buildChest() {
     const c = this.add.container(42, 543).setDepth(50);
     this.chestIcon = this.add.image(0, -8, 'chest').setInteractive({ useHandCursor: true });
+    fitHeight(this.chestIcon, 46);
     this.chestTimer = this.cornerChip('');
-    c.add([this.chestIcon, this.chestTimer]);
+    c.add([this.chestIcon, this.chestTimer.container]);
     this.chestIcon.on('pointerdown', () => this.onChest());
   }
 
@@ -181,14 +178,16 @@ export class GardenScene extends Phaser.Scene {
     const c = this.add.container(318, 543).setDepth(50);
     const circle = this.add.circle(0, -8, 26, UI_COLORS.cream, 0.97).setStrokeStyle(3, 0xffc700);
     circle.setInteractive({ useHandCursor: true });
-    const emoji = this.add.text(0, -8, '🎡', { fontSize: '26px' }).setOrigin(0.5);
-    const label = this.cornerChip('Колесо');
+    const emoji = txt(this, 0, -8, '🎡', { fontSize: '26px' }).setOrigin(0.5);
+    const label = this.cornerChip('Колесо').container;
 
     this.wheelBadge = this.add.container(18, -26);
     const badgeBg = this.add.circle(0, 0, 9, 0xe30613).setStrokeStyle(2, 0xffffff);
-    const badgeText = this.add
-      .text(0, 0, '1', { fontSize: '11px', fontStyle: '800', fontFamily: FONT, color: '#ffffff' })
-      .setOrigin(0.5);
+    const badgeText = txt(this, 0, 0, '1', {
+      fontSize: '11px',
+      fontStyle: '800',
+      color: '#ffffff',
+    }).setOrigin(0.5);
     this.wheelBadge.add([badgeBg, badgeText]);
 
     c.add([circle, emoji, label, this.wheelBadge]);
@@ -238,10 +237,11 @@ export class GardenScene extends Phaser.Scene {
     const { theme, ui } = getApp();
     const crownY = TREE_Y - this.tree.displayHeight * 0.65;
 
+    const dropScale = scaleForHeight(this, 'drop', 22);
     const emitter = this.add.particles(TREE_X, crownY - 40, 'drop', {
       speedX: { min: -60, max: 60 },
       speedY: { min: 60, max: 160 },
-      scale: { start: 0.9, end: 0.3 },
+      scale: { start: dropScale * 0.9, end: dropScale * 0.3 },
       alpha: { start: 1, end: 0.2 },
       lifespan: 550,
       quantity: 14,
@@ -253,8 +253,8 @@ export class GardenScene extends Phaser.Scene {
 
     this.tweens.add({
       targets: this.tree,
-      scaleX: 1.06,
-      scaleY: 0.96,
+      scaleX: this.treeScale * 1.06,
+      scaleY: this.treeScale * 0.96,
       duration: 120,
       yoyo: true,
       ease: 'Quad.easeOut',
@@ -266,7 +266,7 @@ export class GardenScene extends Phaser.Scene {
       stageFlash(this, TREE_X, TREE_Y - 100, theme.colors.accent);
       this.tweens.add({
         targets: this.tree,
-        scale: { from: 0.85, to: 1 },
+        scale: { from: this.treeScale * 0.85, to: this.treeScale },
         duration: 380,
         ease: 'Back.easeOut',
       });
@@ -302,7 +302,10 @@ export class GardenScene extends Phaser.Scene {
     this.harvestText.setText(String(state.harvest));
 
     const key = `tree-${state.tree.fruit}-${state.tree.stage}`;
-    if (this.tree.texture.key !== key) this.tree.setTexture(key);
+    if (this.tree.texture.key !== key) {
+      this.tree.setTexture(key);
+      this.treeScale = fitHeight(this.tree, TREE_H[state.tree.stage]);
+    }
 
     const pct = state.tree.readyToHarvest ? 100 : stageProgressPct(state, ECONOMY);
     this.stageText.setText(

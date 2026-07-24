@@ -9,6 +9,7 @@ import { applyThemeCss } from './config/themes';
 import { BootScene } from './game/BootScene';
 import { GardenScene } from './game/GardenScene';
 import { WheelScene } from './game/WheelScene';
+import { DESIGN_H, DESIGN_W, RENDER_SCALE } from './game/hidpi';
 import { initToasts, toast } from './ui/toasts';
 import { initOverlay } from './ui/overlay';
 import { initNav } from './ui/nav';
@@ -35,27 +36,28 @@ try {
   // без шрифта тоже работаем
 }
 
-// HiDPI: рендерим в devicePixelRatio (до 3×), координаты сцен остаются 360×640
-const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1), 3);
-
+/**
+ * Настоящий HiDPI: буфер canvas = design × RENDER_SCALE, камера зумит обратно
+ * в логические 360×640 (см. applyCameraHiDPI). Phaser scale.zoom этого НЕ
+ * делает — он только меняет CSS-размер.
+ */
 const game = new Phaser.Game({
   type: Phaser.WEBGL,
   parent: 'game-root',
-  width: 360,
-  height: 640,
-  backgroundColor: '#87ceeb',
+  width: Math.round(DESIGN_W * RENDER_SCALE),
+  height: Math.round(DESIGN_H * RENDER_SCALE),
+  transparent: true,
   antialias: true,
   roundPixels: false,
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    zoom: dpr,
   },
   render: {
     antialias: true,
     roundPixels: false,
     powerPreference: 'high-performance',
-    mipmapFilter: 'LINEAR_MIPMAP_LINEAR',
+    transparent: true,
   },
   scene: [BootScene, GardenScene, WheelScene],
 });
@@ -77,4 +79,5 @@ game.events.once(Phaser.Core.Events.READY, () => {
 app.store.on('day:changed', () => maybeShowDailyBonus());
 
 // Доступ из консоли для отладки и автотестов
-(window as unknown as { __app: typeof app }).__app = app;
+(window as unknown as { __app: typeof app; __renderScale: number }).__app = app;
+(window as unknown as { __renderScale: number }).__renderScale = RENDER_SCALE;

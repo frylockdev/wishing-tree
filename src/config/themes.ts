@@ -58,4 +58,6 @@ export function applyThemeCss(brand: BrandId): void {
   root.style.setProperty('--primary', t.colors.primary);
   root.style.setProperty('--primary-dark', t.colors.primaryDark);
   root.style.setProperty('--accent', t.colors.accent);
+  const bg = document.getElementById('garden-bg') as HTMLImageElement | null;
+  if (bg) bg.src = `assets/${t.assetPrefix}/bg.png`;
 }

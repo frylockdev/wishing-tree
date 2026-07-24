@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { FONT } from './uikit';
+import { scaleForHeight } from './hidpi';
+import { txt } from './uikit';
 
 /** Всплывающий текст (+10, +N капель и т.п.) */
 export function floatText(
@@ -9,15 +10,13 @@ export function floatText(
   text: string,
   color = '#ffffff',
 ): void {
-  const t = scene.add
-    .text(x, y, text, {
-      fontSize: '22px',
-      fontStyle: '900',
-      fontFamily: FONT,
-      color,
-      stroke: '#00000055',
-      strokeThickness: 4,
-    })
+  const t = txt(scene, x, y, text, {
+    fontSize: '22px',
+    fontStyle: '900',
+    color,
+    stroke: '#00000055',
+    strokeThickness: 4,
+  })
     .setOrigin(0.5)
     .setDepth(100);
   scene.tweens.add({
@@ -40,21 +39,22 @@ export function burstFruits(
   onDone?: () => void,
 ): void {
   let landed = 0;
+  const base = scaleForHeight(scene, texture, 32);
   for (let i = 0; i < count; i++) {
     const fruit = scene.add
       .image(from.x + Phaser.Math.Between(-60, 60), from.y + Phaser.Math.Between(-70, 20), texture)
       .setDepth(90)
-      .setScale(1.2);
+      .setScale(base * 1.2);
     const midX = fruit.x + Phaser.Math.Between(-40, 40);
     const midY = fruit.y - Phaser.Math.Between(30, 80);
     scene.tweens.chain({
       targets: fruit,
       tweens: [
-        { x: midX, y: midY, scale: 1.4, duration: 250 + i * 40, ease: 'Quad.easeOut' },
+        { x: midX, y: midY, scale: base * 1.4, duration: 250 + i * 40, ease: 'Quad.easeOut' },
         {
           x: to.x,
           y: to.y,
-          scale: 0.5,
+          scale: base * 0.5,
           alpha: 0.9,
           duration: 380,
           ease: 'Cubic.easeIn',
