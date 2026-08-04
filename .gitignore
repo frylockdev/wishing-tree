@@ -8,3 +8,8 @@ scripts/process_art.py
 # спрайты из public/assets
 art_src_v2/
 art_src_final/
+# graphify output
+graphify-out/
+src/graphify-out/
+skills-lock.json
+.agents/

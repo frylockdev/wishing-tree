@@ -11,9 +11,9 @@
     <text y="84" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" letter-spacing="3" fill="#86A88F">PHASER 3 &#183; TYPESCRIPT &#183; VITE</text>
     <text y="158" font-size="66" font-weight="800" fill="#F7F2E5">Сад Выгоды</text>
     <text y="206" font-size="24" fill="#CFE3CF">Кликабельный MVP фермерской мини-игры</text>
-    <text y="238" font-size="24" fill="#CFE3CF">для приложений «Пятёрочки» и «Перекрёстка»</text>
+    <text y="238" font-size="24" fill="#CFE3CF">для приложения «Перекрёстка»</text>
     <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" fill="#86A88F">
-      <text y="290">без бэкенда · мок-API · 2 бренд-скина</text>
+      <text y="290">без бэкенда · мок-API · один бренд</text>
     </g>
   </g>
 

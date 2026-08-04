@@ -21,7 +21,7 @@ export interface App {
 
 let app: App | null = null;
 
-export function initApp(defaultBrand: BrandId = 'pyaterochka'): App {
+export function initApp(defaultBrand: BrandId = 'perekrestok'): App {
   const saved = loadSave();
   const store = new Store(saved ?? initialState(defaultBrand, Math.random));
   const api = new MockApiClient(store);

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { THEMES, type BrandTheme } from '../config/themes';
+import { THEME } from '../config/themes';
 
 /**
  * Грузит арт из public/assets; если файла нет —
@@ -14,11 +14,9 @@ export class BootScene extends Phaser.Scene {
   preload() {
     // Фон больше не грузим в Phaser — он в HTML (#garden-bg) для чёткого HiDPI
     for (let s = 1; s <= 5; s++) {
-      this.load.image(`tree-apple-${s}`, `assets/py/tree-${s}.png`);
-      this.load.image(`tree-pear-${s}`, `assets/pk/tree-${s}.png`);
+      this.load.image(`tree-${THEME.fruit}-${s}`, `assets/${THEME.assetPrefix}/tree-${s}.png`);
     }
-    this.load.image('fruit-apple', 'assets/py/fruit.png');
-    this.load.image('fruit-pear', 'assets/pk/fruit.png');
+    this.load.image(`fruit-${THEME.fruit}`, `assets/${THEME.assetPrefix}/fruit.png`);
     this.load.image('chest', 'assets/common/chest.png');
     this.load.image('drop', 'assets/common/drop.png');
     this.load.image('coin', 'assets/common/coin.png');
@@ -27,13 +25,10 @@ export class BootScene extends Phaser.Scene {
   create() {
     const missing = (key: string) => !this.textures.exists(key);
 
-    for (const [fruit, prefix] of [['apple', 'py'], ['pear', 'pk']] as const) {
-      const fruitTheme = prefix === 'py' ? THEMES.pyaterochka : THEMES.perekrestok;
-      for (let s = 1; s <= 5; s++) {
-        if (missing(`tree-${fruit}-${s}`)) this.makeTree(`tree-${fruit}-${s}`, s, fruitTheme);
-      }
-      if (missing(`fruit-${fruit}`)) this.makeFruit(`fruit-${fruit}`, fruitTheme);
+    for (let s = 1; s <= 5; s++) {
+      if (missing(`tree-${THEME.fruit}-${s}`)) this.makeTree(`tree-${THEME.fruit}-${s}`, s);
     }
+    if (missing(`fruit-${THEME.fruit}`)) this.makeFruit(`fruit-${THEME.fruit}`);
     if (missing('chest')) this.makeChest();
     if (missing('drop')) this.makeDrop();
     if (missing('coin')) this.makeCoin();
@@ -41,12 +36,12 @@ export class BootScene extends Phaser.Scene {
     this.scene.start('Garden');
   }
 
-  private makeTree(key: string, stage: number, theme: BrandTheme) {
+  private makeTree(key: string, stage: number) {
     const g = this.add.graphics();
     const W = 240;
     const H = 300;
     const cx = W / 2;
-    const fruitColor = theme.fruit === 'apple' ? 0xe23b2e : 0xe8c93f;
+    const fruitColor = 0xe8c93f;
 
     const trunkH = [30, 60, 100, 120, 130][stage - 1];
     const crownR = [0, 34, 62, 78, 86][stage - 1];
@@ -92,30 +87,28 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
-  private makeFruit(key: string, theme: BrandTheme) {
+  private makeFruit(key: string) {
     const g = this.add.graphics();
-    const color = theme.fruit === 'apple' ? 0xe23b2e : 0xe8c93f;
-    g.fillStyle(color, 1);
-    if (theme.fruit === 'apple') {
-      g.fillCircle(14, 16, 12);
-    } else {
-      g.fillEllipse(14, 18, 18, 22);
-      g.fillCircle(14, 10, 7);
-    }
+    g.fillStyle(0xe8c93f, 1);
+    g.fillEllipse(14, 18, 18, 22);
+    g.fillCircle(14, 10, 7);
     g.fillStyle(0x6b4a2a, 1);
     g.fillRect(13, 2, 3, 7);
     g.generateTexture(key, 28, 32);
     g.destroy();
   }
 
+  /** Плейсхолдер сундука в айдентике Перекрёстка: зелёная коробка с белой лентой. */
   private makeChest(key = 'chest') {
     const g = this.add.graphics();
-    g.fillStyle(0x8a5a33, 1);
+    g.fillStyle(0x00702a, 1);
     g.fillRoundedRect(2, 12, 44, 30, 6);
-    g.fillStyle(0xa9743f, 1);
+    g.fillStyle(0x009b3a, 1);
     g.fillRoundedRect(2, 4, 44, 18, { tl: 10, tr: 10, bl: 2, br: 2 });
-    g.fillStyle(0xffd24a, 1);
-    g.fillRect(20, 16, 8, 12);
+    g.fillStyle(0xffffff, 1);
+    g.fillRect(20, 4, 8, 38);
+    g.fillStyle(0xffd23f, 1);
+    g.fillCircle(24, 13, 4);
     g.generateTexture(key, 48, 46);
     g.destroy();
   }

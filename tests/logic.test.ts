@@ -20,7 +20,7 @@ import type { GameState } from '../src/config/types';
 const rng = () => 0.5;
 
 function freshState(): GameState {
-  const s = initialState('pyaterochka', rng);
+  const s = initialState('perekrestok', rng);
   s.onboardingDone = true;
   return s;
 }

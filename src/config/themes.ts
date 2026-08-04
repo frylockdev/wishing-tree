@@ -18,22 +18,6 @@ export interface BrandTheme {
 }
 
 export const THEMES: Record<BrandId, BrandTheme> = {
-  pyaterochka: {
-    id: 'pyaterochka',
-    name: 'Пятёрочка',
-    fruit: 'apple',
-    fruitName: 'яблоки',
-    fruitEmoji: '🍎',
-    treeName: 'Яблоня',
-    mascot: 'Ёжик-садовник',
-    colors: {
-      primary: '#e30613',
-      primaryDark: '#a50410',
-      accent: '#ffc700',
-      sky: '#8fd3f0',
-    },
-    assetPrefix: 'py',
-  },
   perekrestok: {
     id: 'perekrestok',
     name: 'Перекрёсток',
@@ -51,6 +35,9 @@ export const THEMES: Record<BrandId, BrandTheme> = {
     assetPrefix: 'pk',
   },
 };
+
+/** Единственная тема игры — обращаться к ней можно без выбора бренда. */
+export const THEME: BrandTheme = THEMES.perekrestok;
 
 /** Инлайновая иконка фрукта темы — вместо системного эмодзи в HTML-панелях. */
 export function fruitIconHtml(theme: BrandTheme): string {

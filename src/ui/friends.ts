@@ -17,7 +17,7 @@ const STAGE_EMOJI: Record<TreeStage, string> = {
   2: '🌿',
   3: '🌳',
   4: '🌸',
-  5: '🍎',
+  5: '🍐',
 };
 
 export function openFriendsPanel(): void {

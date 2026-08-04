@@ -63,13 +63,15 @@ export const REAL: EconomyPreset = {
 export const ECONOMY: EconomyPreset = DEMO;
 
 export const WHEEL_SECTORS: WheelSector[] = [
-  { label: '+10 капель', short: '+10', weight: 30, color: '#4fc3f7', effect: { drops: 10 } },
-  { label: '+25 капель', short: '+25', weight: 22, color: '#29b6f6', effect: { drops: 25 } },
-  { label: '+50 капель', short: '+50', weight: 10, color: '#0288d1', effect: { drops: 50 } },
-  { label: '+50 монет', short: '50', weight: 20, color: '#ffd54f', effect: { coins: 50 } },
-  { label: 'Удобрение ×2', short: '×2', weight: 7, color: '#81c784', effect: { fertilizer: true } },
-  { label: 'Купон −3%', short: '−3%', weight: 10.5, color: '#ff8a65', effect: { couponRewardId: 'coupon3' } },
-  { label: 'ДЖЕКПОТ −15%', short: '−15%', weight: 0.5, color: '#e53935', effect: { couponRewardId: 'coupon15' } },
+  // Палитра Перекрёстка: капли — синие (вода везде в игре синяя), монеты — фирменное
+  // золото, всё призовое — в зелёных, джекпот в самом тёмном брендовом зелёном.
+  { label: '+10 капель', short: '+10', weight: 30, color: '#7fd4f5', effect: { drops: 10 } },
+  { label: '+25 капель', short: '+25', weight: 22, color: '#3fb0e8', effect: { drops: 25 } },
+  { label: '+50 капель', short: '+50', weight: 10, color: '#1878b8', effect: { drops: 50 } },
+  { label: '+50 монет', short: '50', weight: 20, color: '#ffd23f', effect: { coins: 50 } },
+  { label: 'Удобрение ×2', short: '×2', weight: 7, color: '#a5d94f', effect: { fertilizer: true } },
+  { label: 'Купон −3%', short: '−3%', weight: 10.5, color: '#4caf6a', effect: { couponRewardId: 'coupon3' } },
+  { label: 'ДЖЕКПОТ −15%', short: '−15%', weight: 0.5, color: '#00702a', effect: { couponRewardId: 'coupon15' } },
 ];
 
 export const REWARDS: RewardDef[] = [

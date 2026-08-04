@@ -1,5 +1,6 @@
-export type BrandId = 'pyaterochka' | 'perekrestok';
-export type FruitId = 'apple' | 'pear';
+/** Игра брендирована под один бренд — Перекрёсток. */
+export type BrandId = 'perekrestok';
+export type FruitId = 'pear';
 /** 1 росток · 2 саженец · 3 молодое · 4 цветущее · 5 плодоносящее */
 export type TreeStage = 1 | 2 | 3 | 4 | 5;
 

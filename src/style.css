@@ -1,13 +1,16 @@
 :root {
-  --primary: #e30613;
-  --primary-dark: #b00510;
-  --accent: #ffc700;
-  --panel-bg: #fff8ec;
-  --cream: #fffdf6;
-  --cream-border: #ecdfc3;
-  --text: #4a3823;
-  --text-soft: #9b8767;
-  --shadow-soft: 0 2px 10px rgba(90, 65, 25, 0.1);
+  /* Айдентика Перекрёстка: фирменный зелёный + жёлтый сигнальный акцент.
+     Кремовая база оставлена — она совпадает с тёплым небом low-poly арта. */
+  --primary: #009b3a;
+  --primary-dark: #00702a;
+  --accent: #ffd23f;
+  --leaf: #6cbe45;
+  --panel-bg: #f6fbf3;
+  --cream: #fdfffb;
+  --cream-border: #d8e8cf;
+  --text: #24402c;
+  --text-soft: #7d9384;
+  --shadow-soft: 0 2px 10px rgba(20, 70, 40, 0.1);
   --frame-w: 360px;
   --frame-h: 640px;
 }
@@ -472,6 +475,23 @@ body {
 .onboarding-emoji {
   font-size: 56px;
   margin-bottom: 8px;
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Фирменный клевер на первом слайде — крупнее прочей иллюстрации */
+.onboarding-logo {
+  height: 68px;
+  width: auto;
+  filter: drop-shadow(0 3px 6px rgba(20, 70, 40, 0.28));
+}
+
+.onboarding-art {
+  height: 60px;
+  width: auto;
+  filter: drop-shadow(0 3px 5px rgba(20, 70, 40, 0.24));
 }
 
 .onboarding-title {
@@ -534,12 +554,33 @@ body {
   box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 60%, #ffffff);
 }
 
+/* Бренд один — саженец тоже один: карточка стала витриной, а не кнопкой выбора */
+.sapling-row.single {
+  max-width: 190px;
+  margin-inline: auto;
+}
+
+.sapling-card.static {
+  cursor: default;
+  border-color: color-mix(in srgb, var(--primary) 30%, var(--cream-border));
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--primary) 18%, var(--cream-border));
+}
+
+.sapling-card.static:hover {
+  border-color: color-mix(in srgb, var(--primary) 30%, var(--cream-border));
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--primary) 18%, var(--cream-border));
+}
+
+.sapling-card.static:active {
+  transform: none;
+}
+
 .sapling-art {
   display: block;
   height: 72px;
   width: auto;
   margin: 0 auto 6px;
-  filter: drop-shadow(0 3px 4px rgba(90, 65, 25, 0.22));
+  filter: drop-shadow(0 3px 4px rgba(20, 70, 40, 0.22));
 }
 
 /* ---------- Стрик ---------- */
@@ -869,7 +910,7 @@ body {
 
 .place-1 .podium-base {
   height: 52px;
-  background: #ffc700;
+  background: var(--accent);
 }
 
 .place-2 .podium-base {
@@ -942,7 +983,7 @@ body {
 }
 
 .dev-time {
-  color: #ffc700;
+  color: var(--accent);
 }
 
 .dev-grid {

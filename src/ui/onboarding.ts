@@ -5,19 +5,19 @@ import { toast } from './toasts';
 
 const SLIDES = [
   {
-    emoji: '🌳',
-    title: 'Добро пожаловать в Сад Выгоды!',
-    text: 'Вырасти своё фруктовое дерево рядом с любимым магазином — а магазин поделится с тобой выгодой.',
+    art: '<img class="onboarding-logo" src="assets/pk/logo.png" alt="Перекрёсток">',
+    title: 'Сад Выгоды от Перекрёстка',
+    text: 'Вырасти свою грушу рядом с Перекрёстком — а магазин поделится с тобой выгодой.',
   },
   {
-    emoji: '💧',
+    art: '<img class="onboarding-art" src="assets/common/drop.png" alt="">',
     title: 'Поливай каждый день',
     text: 'Капли воды — за вход в игру, задания, чеки и помощь друзьям. Каждый полив приближает урожай.',
   },
   {
-    emoji: '🎁',
+    art: '<img class="onboarding-art" src="assets/common/chest.png" alt="">',
     title: 'Меняй урожай на награды',
-    text: 'Собранные фрукты обменивай на реальные купоны, продукты и баллы лояльности.',
+    text: 'Собранные груши обменивай на купоны Перекрёстка, продукты и баллы лояльности.',
   },
 ];
 
@@ -30,11 +30,11 @@ function showSlide(index: number, onDone: () => void): void {
   const isLast = index === SLIDES.length - 1;
   const content = el(`
     <div class="onboarding">
-      <div class="onboarding-emoji">${slide.emoji}</div>
+      <div class="onboarding-emoji">${slide.art}</div>
       <div class="onboarding-title">${slide.title}</div>
       <div class="onboarding-text">${slide.text}</div>
       <div class="onboarding-dots">${SLIDES.map((_, i) => `<i class="${i === index ? 'on' : ''}"></i>`).join('')}</div>
-      <button class="btn primary big">${isLast ? 'Выбрать саженец' : 'Дальше'}</button>
+      <button class="btn primary big">${isLast ? 'Посадить саженец' : 'Дальше'}</button>
     </div>
   `);
   const close = openModal(content, { dismissable: false });
@@ -45,33 +45,34 @@ function showSlide(index: number, onDone: () => void): void {
   });
 }
 
-/** Выбор саженца: в онбординге и после сбора урожая */
+/**
+ * Посадка саженца: в онбординге и после сбора урожая.
+ * Бренд один (Перекрёсток), поэтому дерево тоже одно — грушевое,
+ * и экран стал подтверждением посадки вместо выбора из двух.
+ */
 export function openSaplingChooser(isOnboarding = false, onDone?: () => void): void {
-  const { api } = getApp();
+  const { api, theme } = getApp();
   const content = el(`
     <div class="onboarding">
-      <div class="onboarding-title">${isOnboarding ? 'Выбери свой первый саженец' : 'Новый сезон — новый саженец!'}</div>
-      <div class="sapling-row">
-        <button class="sapling-card" data-fruit="apple">
-          <img class="sapling-art" src="assets/py/tree-5.png" alt="">
-          <div class="task-title">Яблоня</div>
-        </button>
-        <button class="sapling-card" data-fruit="pear">
-          <img class="sapling-art" src="assets/pk/tree-5.png" alt="">
-          <div class="task-title">Груша</div>
-        </button>
+      <div class="onboarding-title">${isOnboarding ? 'Посади свой первый саженец' : 'Новый сезон — новый саженец!'}</div>
+      <div class="sapling-row single">
+        <div class="sapling-card static">
+          <img class="sapling-art" src="assets/${theme.assetPrefix}/tree-5.png" alt="">
+          <div class="task-title">${theme.treeName}</div>
+          <div class="task-meta">Дерево «${theme.name}»</div>
+        </div>
       </div>
+      <button class="btn primary big" data-fruit="${theme.fruit}">Посадить</button>
     </div>
   `);
   const close = openModal(content, { dismissable: false });
-  content.querySelectorAll<HTMLButtonElement>('.sapling-card').forEach((btn) =>
-    btn.addEventListener('click', async () => {
-      btn.disabled = true;
-      await api.selectSapling(btn.dataset.fruit as FruitId);
-      if (isOnboarding) await api.completeOnboarding();
-      close();
-      toast(isOnboarding ? 'Саженец посажен — полей его!' : 'Новый сезон начался!', '🌱');
-      onDone?.();
-    }),
-  );
+  const btn = content.querySelector<HTMLButtonElement>('button[data-fruit]')!;
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    await api.selectSapling(btn.dataset.fruit as FruitId);
+    if (isOnboarding) await api.completeOnboarding();
+    close();
+    toast(isOnboarding ? 'Саженец посажен — полей его!' : 'Новый сезон начался!', '🌱');
+    onDone?.();
+  });
 }

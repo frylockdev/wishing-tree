@@ -1,0 +1,17 @@
+# Tooling / vendor skill libraries - not part of the game
+.claude/
+.agents/
+.cursor/
+skills-lock.json
+
+# Separate project
+smmok_deck/
+
+# NOTE: do not ignore graphify-out/ here - graphify prunes it as a noise dir on its
+# own, but writes converted .docx/.pdf sidecars into graphify-out/converted/ that
+# must stay visible to detect. Ignoring it drops those documents from the corpus.
+
+# Dependencies / build
+node_modules/
+dist/
+build/

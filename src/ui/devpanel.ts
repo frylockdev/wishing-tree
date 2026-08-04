@@ -38,18 +38,16 @@ function toggle(root: HTMLElement): void {
 function render(): HTMLElement {
   const { store, api } = getApp();
   const s = store.state;
-  const otherBrand = s.brand === 'pyaterochka' ? 'perekrestok' : 'pyaterochka';
 
   const p = el(`
     <div id="dev-panel">
       <div class="dev-title">⚙️ Дев-панель <span class="dev-time">День ${s.day}, ${String(s.hour).padStart(2, '0')}:00</span></div>
       <div class="dev-grid">
         <button data-act="drops">+100 💧</button>
-        <button data-act="harvest">+500 🍎</button>
+        <button data-act="harvest">+500 🍐</button>
         <button data-act="coins">+100 🪙</button>
         <button data-act="day">Новый день ☀️</button>
         <button data-act="hours">+4 часа ⏰</button>
-        <button data-act="brand">Скин: ${otherBrand === 'pyaterochka' ? 'Пятёрочка' : 'Перекрёсток'}</button>
         <button data-act="reset" class="danger">Сбросить прогресс</button>
       </div>
     </div>
@@ -64,7 +62,7 @@ function render(): HTMLElement {
           break;
         case 'harvest':
           await api.devGrant({ harvest: 500 });
-          toast('+500 урожая', '🍎');
+          toast('+500 урожая', '🍐');
           break;
         case 'coins':
           await api.devGrant({ coins: 100 });
@@ -79,10 +77,6 @@ function render(): HTMLElement {
           await api.devAdvance({ hours: 4 });
           toast('+4 часа', '⏰');
           refresh();
-          break;
-        case 'brand':
-          await api.setBrand(otherBrand);
-          location.reload();
           break;
         case 'reset':
           if (confirm('Точно сбросить весь прогресс?')) {
