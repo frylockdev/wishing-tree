@@ -1,5 +1,5 @@
 import { ECONOMY, WHEEL_SECTORS } from '../config/economy';
-import { THEMES } from '../config/themes';
+import { THEME, THEMES } from '../config/themes';
 import type { BrandId, Coupon, FruitId, GameState } from '../config/types';
 import type { Store } from '../state/store';
 import type { ApiClient } from './ApiClient';
@@ -22,10 +22,25 @@ import {
 
 const SAVE_KEY = 'sad-vygody-save-v1';
 
+/**
+ * Приводит сейв старой двухбрендовой версии к текущей одобрендовой.
+ * До ребрендинга в сейве мог лежать brand:'pyaterochka' и fruit:'apple';
+ * этих ключей в THEMES/ассетах больше нет, и без миграции игра падала бы
+ * на THEMES[brand].colors у всех, кто уже играл.
+ */
+export function migrate(state: GameState): GameState {
+  if (!(state.brand in THEMES)) state.brand = THEME.id;
+  if (state.tree && state.tree.fruit !== THEME.fruit) state.tree.fruit = THEME.fruit;
+  if (Array.isArray(state.album)) {
+    for (const entry of state.album) entry.fruit = THEME.fruit;
+  }
+  return state;
+}
+
 export function loadSave(): GameState | null {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
-    return raw ? (JSON.parse(raw) as GameState) : null;
+    return raw ? migrate(JSON.parse(raw) as GameState) : null;
   } catch {
     return null;
   }

@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { migrate } from '../src/api/MockApiClient';
+import { THEMES } from '../src/config/themes';
 import {
   applyClaimTask,
   applyDailyBonus,
@@ -246,5 +248,35 @@ describe('обмен наград', () => {
   it('не хватает урожая — ошибка', () => {
     const res = applyExchange(freshState(), 'coupon10', rng);
     expect(res.error).toBeTruthy();
+  });
+});
+
+describe('миграция сейва со старой двухбрендовой версии', () => {
+  it('переводит бренд «Пятёрочка» на «Перекрёсток» и яблоню на грушу', () => {
+    // Такой сейв лежал в localStorage у всех, кто играл до ребрендинга.
+    // Без миграции THEMES[brand] === undefined и игра падала на .colors.
+    const legacy = {
+      ...initialState('perekrestok', rng),
+      brand: 'pyaterochka',
+      tree: { fruit: 'apple', growthPoints: 120, stage: 3, readyToHarvest: false, season: 2 },
+      album: [{ season: 1, fruit: 'apple', harvestedAmount: 900, day: 12 }],
+    } as unknown as GameState;
+
+    const s = migrate(legacy);
+
+    expect(s.brand).toBe('perekrestok');
+    expect(THEMES[s.brand]).toBeDefined();
+    expect(s.tree.fruit).toBe('pear');
+    expect(s.album[0].fruit).toBe('pear');
+    // прогресс не теряется
+    expect(s.tree.growthPoints).toBe(120);
+    expect(s.tree.stage).toBe(3);
+    expect(s.album[0].harvestedAmount).toBe(900);
+  });
+
+  it('не трогает уже актуальный сейв', () => {
+    const fresh = initialState('perekrestok', rng);
+    const s = migrate(structuredClone(fresh));
+    expect(s).toEqual(fresh);
   });
 });

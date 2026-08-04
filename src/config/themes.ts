@@ -45,7 +45,9 @@ export function fruitIconHtml(theme: BrandTheme): string {
 }
 
 export function applyThemeCss(brand: BrandId): void {
-  const t = THEMES[brand];
+  // Фолбэк на единственную тему: в сейве старой версии мог остаться бренд,
+  // которого больше нет в THEMES (см. migrate() в MockApiClient).
+  const t = THEMES[brand] ?? THEME;
   const root = document.documentElement;
   root.style.setProperty('--primary', t.colors.primary);
   root.style.setProperty('--primary-dark', t.colors.primaryDark);
